@@ -10,6 +10,7 @@
             --primary-dark: #072a44;
             --secondary: #20bf6b;
             --accent: #3867d6;
+            --whatsapp-color: #25D366;
             --bg: #f1f2f6;
             --card-bg: #ffffff;
             --text: #2f3542;
@@ -123,6 +124,14 @@
             background-color: #2b52b3;
         }
 
+        .btn-whatsapp {
+            background-color: var(--whatsapp-color);
+            color: white;
+        }
+        .btn-whatsapp:hover {
+            background-color: #20ba5a;
+        }
+
         .btn-success {
             background-color: var(--secondary);
         }
@@ -217,7 +226,7 @@
             transition: all 0.2s;
         }
 
-        /* Color para el registro (Azul) */
+        /* Color para el registro (Verde WhatsApp / Azul) */
         .progol-check.user-check input:checked ~ .checkmark {
             background-color: var(--accent);
             color: white;
@@ -319,10 +328,11 @@
 
     <div class="container">
         
+        <!-- SECCIÓN 1: LLENAR Y ENVIAR POR WHATSAPP (PARA TUS AMIGOS) -->
         <div class="card">
-            <h2>📝 CAPTURAR QUINIELA (WHATSAPP)</h2>
+            <h2>📝 1. REGISTRAR MI QUINIELA</h2>
             <p style="font-size: 0.85rem; color: #7f8c8d; margin-bottom: 10px;">
-                Captura lo que te mandaron por WhatsApp para generar el código e ir armando tu lista.
+                Escribe tu nombre completo, selecciona tus pronósticos y envíalos por WhatsApp con un solo clic.
             </p>
             <div class="input-group">
                 <label class="input-label" for="registro-nombre">Nombre del Participante:</label>
@@ -340,15 +350,14 @@
                         </tr>
                     </thead>
                     <tbody id="registro-partidos-body">
-                        </tbody>
+                        <!-- Se genera dinámicamente -->
+                    </tbody>
                 </table>
             </div>
-            <button class="btn" onclick="generarCodigoParticipante()">Generar Código para GitHub</button>
-            
-            <div id="codigo-contenedor" class="codigo-resultado"></div>
-            <button id="btn-copiar" class="btn btn-success" style="display: none;" onclick="copiarCodigoAlPortapapeles()">📋 Copiar Código</button>
+            <button class="btn btn-whatsapp" onclick="enviarPorWhatsApp()">💬 Enviar por WhatsApp</button>
         </div>
 
+        <!-- SECCIÓN 2: CONTROL DE RESULTADOS REALES (PARA TI) -->
         <div class="card">
             <h2>🛠️ PANEL DE CONTROL (RESULTADOS REALES)</h2>
             <p style="font-size: 0.85rem; color: #7f8c8d; margin-bottom: 10px;">
@@ -365,11 +374,13 @@
                         </tr>
                     </thead>
                     <tbody id="admin-partidos-body">
-                        </tbody>
+                        <!-- Se genera dinámicamente -->
+                    </tbody>
                 </table>
             </div>
         </div>
 
+        <!-- TABLA DE POSICIONES -->
         <div class="card posiciones-section">
             <h2>Tabla de Posiciones</h2>
             <table class="ranking-table">
@@ -381,10 +392,12 @@
                     </tr>
                 </thead>
                 <tbody id="ranking-body">
-                    </tbody>
+                    <!-- Se llena dinámicamente -->
+                </tbody>
             </table>
         </div>
 
+        <!-- MATRIZ DE PREDICCIONES -->
         <div class="card matrix-section">
             <h2>📊 Matriz de Predicciones y Resultados</h2>
             <input type="text" id="search" class="search-box" placeholder="🔍 Buscar participante por nombre..." oninput="filtrarParticipantes()">
@@ -394,17 +407,54 @@
                     <thead>
                         <tr id="matrix-header">
                             <th>Participante</th>
-                            </tr>
+                            <!-- Los encabezados de los partidos se generan dinámicamente -->
+                        </tr>
                     </thead>
                     <tbody id="matrix-body">
-                        </tbody>
+                        <!-- Las predicciones se cargan dinámicamente -->
+                    </tbody>
                 </table>
             </div>
+        </div>
+
+        <!-- SECCIÓN EXCLUSIVA PARA EL ADMINISTRADOR (TÚ): CONVERTIDOR DE WHATSAPP A GITHUB -->
+        <div class="card matrix-section" style="border: 2px dashed var(--accent);">
+            <h2>⚙️ CREADOR DE CÓDIGO GITHUB (SOLO ADMINISTRADOR)</h2>
+            <p style="font-size: 0.85rem; color: #7f8c8d; margin-bottom: 10px;">
+                Usa esta herramienta rápida para procesar las quinielas que te llegan por WhatsApp y generar el código listo para pegar en GitHub.
+            </p>
+            <div class="input-group">
+                <label class="input-label" for="admin-captura-nombre">Nombre del Participante:</label>
+                <input type="text" id="admin-captura-nombre" class="text-input" placeholder="Nombre recibido en WhatsApp">
+            </div>
+            
+            <div class="table-responsive">
+                <table class="progol-table">
+                    <thead>
+                        <tr>
+                            <th>Partido</th>
+                            <th style="width: 50px;">L</th>
+                            <th style="width: 50px;">E</th>
+                            <th style="width: 50px;">V</th>
+                        </tr>
+                    </thead>
+                    <tbody id="admin-capturador-body">
+                        <!-- Se genera dinámicamente -->
+                    </tbody>
+                </table>
+            </div>
+            <button class="btn" onclick="generarCodigoParticipante()">Generar Código para GitHub</button>
+            
+            <div id="codigo-contenedor" class="codigo-resultado"></div>
+            <button id="btn-copiar" class="btn btn-success" style="display: none;" onclick="copiarCodigoAlPortapapeles()">📋 Copiar Código</button>
         </div>
 
     </div>
 
     <script>
+        // TU NÚMERO DE TELÉFONO EN FORMATO INTERNACIONAL (Para México agregamos 52 + tus 10 dígitos)
+        const WHATSAPP_NUMERO = "525546879724";
+
         // ====================================================================
         // CONFIGURACIÓN DE LOS PARTIDOS (Modifica esta lista cada semana)
         // ====================================================================
@@ -445,7 +495,7 @@
         }
 
         function initQuiniela() {
-            // 1. Renderizar Panel de Registro de Participantes
+            // 1. Renderizar Panel de Registro de Participantes (Para tus amigos)
             const registroBody = document.getElementById("registro-partidos-body");
             registroBody.innerHTML = "";
             partidos.forEach((partido, index) => {
@@ -505,7 +555,36 @@
                 adminBody.appendChild(tr);
             });
 
-            // 3. Renderizar Encabezados de la Tabla Matriz
+            // 3. Renderizar Panel Capturador para el Administrador (Tú)
+            const adminCapturadorBody = document.getElementById("admin-capturador-body");
+            adminCapturadorBody.innerHTML = "";
+            partidos.forEach((partido, index) => {
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td class="partido-celda"><b>${index + 1}.</b> ${partido}</td>
+                    <td>
+                        <label class="progol-check user-check">
+                            <input type="radio" name="captura-partido-${index}" value="L">
+                            <span class="checkmark">L</span>
+                        </label>
+                    </td>
+                    <td>
+                        <label class="progol-check user-check">
+                            <input type="radio" name="captura-partido-${index}" value="E">
+                            <span class="checkmark">E</span>
+                        </label>
+                    </td>
+                    <td>
+                        <label class="progol-check user-check">
+                            <input type="radio" name="captura-partido-${index}" value="V">
+                            <span class="checkmark">V</span>
+                        </label>
+                    </td>
+                `;
+                adminCapturadorBody.appendChild(tr);
+            });
+
+            // 4. Renderizar Encabezados de la Tabla Matriz
             const headerRow = document.getElementById("matrix-header");
             while (headerRow.cells.length > 1) {
                 headerRow.deleteCell(1);
@@ -516,7 +595,7 @@
                 headerRow.appendChild(th);
             });
 
-            // 4. Renderizar filas de predicciones de los participantes
+            // 5. Renderizar filas de predicciones de los participantes
             const matrixBody = document.getElementById("matrix-body");
             matrixBody.innerHTML = "";
             participantes.forEach(p => {
@@ -535,9 +614,49 @@
             recalcularYRenderizar();
         }
 
-        // Genera el código para copiar y pegar en GitHub
-        function generarCodigoParticipante() {
+        // FUNCIÓN: ARMA EL MENSAJE DE WHATSAPP Y ABRE LA APLICACIÓN
+        function enviarPorWhatsApp() {
             const nombreInput = document.getElementById("registro-nombre").value.trim();
+            
+            if (!nombreInput) {
+                alert("⚠️ Por favor, escribe tu nombre antes de enviar.");
+                return;
+            }
+
+            const pronosticosList = [];
+            for (let i = 0; i < partidos.length; i++) {
+                const checkedRadio = document.querySelector(`input[name="registro-partido-${i}"]:checked`);
+                if (!checkedRadio) {
+                    alert(`⚠️ Te falta seleccionar tu pronóstico para el Partido #${i + 1}.`);
+                    return;
+                }
+                pronosticosList.push(`${i + 1}. ${partidos[i]} -> [${checkedRadio.value}]`);
+            }
+
+            // Crear un mensaje ordenado y estético para enviar por WhatsApp
+            let mensaje = `*🏆 MI QUINIELA LIGA MX 🏆*\n\n`;
+            mensaje += `👤 *Participante:* ${nombreInput}\n\n`;
+            mensaje += `📋 *Pronósticos:* \n`;
+            
+            pronosticosList.forEach(item => {
+                mensaje += `• ${item}\n`;
+            });
+
+            mensaje += `\n_Enviado de forma automática desde la Web de la Quiniela._`;
+
+            // Convertir texto para que sea compatible con un link
+            const urlMensaje = encodeURIComponent(mensaje);
+            
+            // Construir enlace de WhatsApp API
+            const linkWhatsApp = `https://api.whatsapp.com/send?phone=${WHATSAPP_NUMERO}&text=${urlMensaje}`;
+            
+            // Redireccionar al usuario a WhatsApp
+            window.open(linkWhatsApp, "_blank");
+        }
+
+        // FUNCIÓN: Genera el código para copiar y pegar en GitHub (Para el Admin)
+        function generarCodigoParticipante() {
+            const nombreInput = document.getElementById("admin-captura-nombre").value.trim();
             
             if (!nombreInput) {
                 alert("⚠️ Por favor, ingresa el nombre del participante.");
@@ -546,9 +665,9 @@
 
             const nuevosPronosticos = [];
             for (let i = 0; i < partidos.length; i++) {
-                const checkedRadio = document.querySelector(`input[name="registro-partido-${i}"]:checked`);
+                const checkedRadio = document.querySelector(`input[name="captura-partido-${i}"]:checked`);
                 if (!checkedRadio) {
-                    alert(`⚠️ Te falta seleccionar tu pronóstico para el Partido #${i + 1}.`);
+                    alert(`⚠️ Te falta seleccionar el pronóstico para el Partido #${i + 1}.`);
                     return;
                 }
                 nuevosPronosticos.push(`"${checkedRadio.value}"`);
@@ -564,16 +683,16 @@
             document.getElementById("btn-copiar").style.display = "block";
         }
 
-        // Función para copiar fácilmente
+        // Función para copiar fácilmente el código
         function copiarCodigoAlPortapapeles() {
             const texto = document.getElementById("codigo-contenedor").innerText;
             navigator.clipboard.writeText(texto).then(() => {
-                alert("📋 ¡Código copiado! Ahora ve a tu código en GitHub, búscalo y pégalo dentro de la lista de 'participantes'.");
+                alert("📋 ¡Código copiado! Pégalo dentro de la lista de 'participantes' en tu archivo index.html de GitHub.");
                 
-                // Limpiar el formulario para la siguiente captura
-                document.getElementById("registro-nombre").value = "";
+                // Limpiar el formulario de captura
+                document.getElementById("admin-captura-nombre").value = "";
                 for (let i = 0; i < partidos.length; i++) {
-                    const radio = document.querySelector(`input[name="registro-partido-${i}"]:checked`);
+                    const radio = document.querySelector(`input[name="captura-partido-${i}"]:checked`);
                     if (radio) radio.checked = false;
                 }
                 document.getElementById("codigo-contenedor").style.display = "none";
@@ -594,7 +713,7 @@
                 
                 participantes.forEach(p => {
                     const pronosticoUser = p.pronosticos[i];
-                    const fila = document.getElementById(`fila-${generarSlug(p.nombre}`);
+                    const fila = document.getElementById(`fila-${generarSlug(p.nombre)}`);
                     if (fila) {
                         const celda = fila.querySelector(`td[data-partido-index="${i}"]`);
                         if (celda) {

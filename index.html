@@ -226,7 +226,7 @@
             transition: all 0.2s;
         }
 
-        /* Color para el registro (Verde WhatsApp / Azul) */
+        /* Color para el registro (Azul) */
         .progol-check.user-check input:checked ~ .checkmark {
             background-color: var(--accent);
             color: white;
@@ -328,11 +328,11 @@
 
     <div class="container">
         
-        <!-- SECCIÓN 1: LLENAR Y ENVIAR POR WHATSAPP (PARA TUS AMIGOS) -->
+        <!-- SECCIÓN: REGISTRAR MI QUINIELA (ENVÍA POR WHATSAPP) -->
         <div class="card">
-            <h2>📝 1. REGISTRAR MI QUINIELA</h2>
+            <h2>📝 REGISTRAR MI QUINIELA</h2>
             <p style="font-size: 0.85rem; color: #7f8c8d; margin-bottom: 10px;">
-                Escribe tu nombre completo, selecciona tus pronósticos y envíalos por WhatsApp con un solo clic.
+                Escribe tu nombre, marca tus pronósticos y haz clic en el botón para enviármelos directamente por WhatsApp.
             </p>
             <div class="input-group">
                 <label class="input-label" for="registro-nombre">Nombre del Participante:</label>
@@ -357,7 +357,40 @@
             <button class="btn btn-whatsapp" onclick="enviarPorWhatsApp()">💬 Enviar por WhatsApp</button>
         </div>
 
-        <!-- SECCIÓN 2: CONTROL DE RESULTADOS REALES (PARA TI) -->
+        <!-- SECCIÓN: CREADOR DE CÓDIGO (HERRAMIENTA PARA TI) -->
+        <div class="card">
+            <h2>⚙️ PROCESAR WHATSAPP (PARA GITHUB)</h2>
+            <p style="font-size: 0.85rem; color: #7f8c8d; margin-bottom: 10px;">
+                Copia aquí las jugadas que te manden tus amigos por WhatsApp para generar el código que va en GitHub.
+            </p>
+            <div class="input-group">
+                <label class="input-label" for="admin-captura-nombre">Nombre del Participante:</label>
+                <input type="text" id="admin-captura-nombre" class="text-input" placeholder="Nombre de tu amigo">
+            </div>
+            
+            <div class="table-responsive">
+                <table class="progol-table">
+                    <thead>
+                        <tr>
+                            <th>Partido</th>
+                            <th style="width: 50px;">L</th>
+                            <th style="width: 50px;">E</th>
+                            <th style="width: 50px;">V</th>
+                        </tr>
+                    </thead>
+                    <tbody id="admin-capturador-body">
+                        <!-- Se genera dinámicamente -->
+                    </tbody>
+                </table>
+            </div>
+            <button class="btn" onclick="generarCodigoParticipante()">Generar Código para GitHub</button>
+            
+            <!-- Aquí se muestra el código listo para copiar -->
+            <div id="codigo-contenedor" class="codigo-resultado"></div>
+            <button id="btn-copiar" class="btn btn-success" style="display: none;" onclick="copiarCodigoAlPortapapeles()">📋 Copiar Código</button>
+        </div>
+
+        <!-- SECCIÓN: PANEL DE CONTROL: RESULTADOS REALES -->
         <div class="card">
             <h2>🛠️ PANEL DE CONTROL (RESULTADOS REALES)</h2>
             <p style="font-size: 0.85rem; color: #7f8c8d; margin-bottom: 10px;">
@@ -417,46 +450,14 @@
             </div>
         </div>
 
-        <!-- SECCIÓN EXCLUSIVA PARA EL ADMINISTRADOR (TÚ): CONVERTIDOR DE WHATSAPP A GITHUB -->
-        <div class="card matrix-section" style="border: 2px dashed var(--accent);">
-            <h2>⚙️ CREADOR DE CÓDIGO GITHUB (SOLO ADMINISTRADOR)</h2>
-            <p style="font-size: 0.85rem; color: #7f8c8d; margin-bottom: 10px;">
-                Usa esta herramienta rápida para procesar las quinielas que te llegan por WhatsApp y generar el código listo para pegar en GitHub.
-            </p>
-            <div class="input-group">
-                <label class="input-label" for="admin-captura-nombre">Nombre del Participante:</label>
-                <input type="text" id="admin-captura-nombre" class="text-input" placeholder="Nombre recibido en WhatsApp">
-            </div>
-            
-            <div class="table-responsive">
-                <table class="progol-table">
-                    <thead>
-                        <tr>
-                            <th>Partido</th>
-                            <th style="width: 50px;">L</th>
-                            <th style="width: 50px;">E</th>
-                            <th style="width: 50px;">V</th>
-                        </tr>
-                    </thead>
-                    <tbody id="admin-capturador-body">
-                        <!-- Se genera dinámicamente -->
-                    </tbody>
-                </table>
-            </div>
-            <button class="btn" onclick="generarCodigoParticipante()">Generar Código para GitHub</button>
-            
-            <div id="codigo-contenedor" class="codigo-resultado"></div>
-            <button id="btn-copiar" class="btn btn-success" style="display: none;" onclick="copiarCodigoAlPortapapeles()">📋 Copiar Código</button>
-        </div>
-
     </div>
 
     <script>
-        // TU NÚMERO DE TELÉFONO EN FORMATO INTERNACIONAL (Para México agregamos 52 + tus 10 dígitos)
+        // TU NÚMERO DE TELÉFONO EN FORMATO INTERNACIONAL (Con el prefijo internacional de México: 52)
         const WHATSAPP_NUMERO = "525546879724";
 
         // ====================================================================
-        // CONFIGURACIÓN DE LOS PARTIDOS (Modifica esta lista cada semana)
+        // CONFIGURACIÓN DE LOS PARTIDOS (Tus partidos originales restaurados)
         // ====================================================================
         const partidos = [
             "Necaxa vs. Atlante",
@@ -471,13 +472,13 @@
         ];
 
         // ====================================================================
-        // RESULTADOS REALES DE LOS PARTIDOS
+        // RESULTADOS REALES DE LOS PARTIDOS (Tus resultados restaurados)
         // ====================================================================
         // Pon el resultado real: "L" (Local), "E" (Empate), "V" (Visita) o "-" (No jugado)
         const resultadosReales = ["L", "V", "E", "-", "-", "-", "-", "-", "-"];
 
         // ====================================================================
-        // PRONÓSTICOS DE LOS PARTICIPANTES (Copia aquí los códigos generados)
+        // PRONÓSTICOS DE LOS PARTICIPANTES (Tus participantes originales)
         // ====================================================================
         const participantes = [
             { nombre: "Carlos", pronosticos: ["L", "L", "L", "L", "E", "V", "L", "L", "V"] },
@@ -495,7 +496,7 @@
         }
 
         function initQuiniela() {
-            // 1. Renderizar Panel de Registro de Participantes (Para tus amigos)
+            // 1. Renderizar Panel de Registro de Participantes (Para que tus amigos seleccionen)
             const registroBody = document.getElementById("registro-partidos-body");
             registroBody.innerHTML = "";
             partidos.forEach((partido, index) => {
@@ -524,7 +525,36 @@
                 registroBody.appendChild(tr);
             });
 
-            // 2. Renderizar Panel Admin de Resultados Reales
+            // 2. Renderizar Panel Capturador para el Administrador (Tú)
+            const adminCapturadorBody = document.getElementById("admin-capturador-body");
+            adminCapturadorBody.innerHTML = "";
+            partidos.forEach((partido, index) => {
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td class="partido-celda"><b>${index + 1}.</b> ${partido}</td>
+                    <td>
+                        <label class="progol-check user-check">
+                            <input type="radio" name="captura-partido-${index}" value="L">
+                            <span class="checkmark">L</span>
+                        </label>
+                    </td>
+                    <td>
+                        <label class="progol-check user-check">
+                            <input type="radio" name="captura-partido-${index}" value="E">
+                            <span class="checkmark">E</span>
+                        </label>
+                    </td>
+                    <td>
+                        <label class="progol-check user-check">
+                            <input type="radio" name="captura-partido-${index}" value="V">
+                            <span class="checkmark">V</span>
+                        </label>
+                    </td>
+                `;
+                adminCapturadorBody.appendChild(tr);
+            });
+
+            // 3. Renderizar Panel Admin de Resultados Reales
             const adminBody = document.getElementById("admin-partidos-body");
             adminBody.innerHTML = "";
             partidos.forEach((partido, index) => {
@@ -553,35 +583,6 @@
                     </td>
                 `;
                 adminBody.appendChild(tr);
-            });
-
-            // 3. Renderizar Panel Capturador para el Administrador (Tú)
-            const adminCapturadorBody = document.getElementById("admin-capturador-body");
-            adminCapturadorBody.innerHTML = "";
-            partidos.forEach((partido, index) => {
-                const tr = document.createElement("tr");
-                tr.innerHTML = `
-                    <td class="partido-celda"><b>${index + 1}.</b> ${partido}</td>
-                    <td>
-                        <label class="progol-check user-check">
-                            <input type="radio" name="captura-partido-${index}" value="L">
-                            <span class="checkmark">L</span>
-                        </label>
-                    </td>
-                    <td>
-                        <label class="progol-check user-check">
-                            <input type="radio" name="captura-partido-${index}" value="E">
-                            <span class="checkmark">E</span>
-                        </label>
-                    </td>
-                    <td>
-                        <label class="progol-check user-check">
-                            <input type="radio" name="captura-partido-${index}" value="V">
-                            <span class="checkmark">V</span>
-                        </label>
-                    </td>
-                `;
-                adminCapturadorBody.appendChild(tr);
             });
 
             // 4. Renderizar Encabezados de la Tabla Matriz

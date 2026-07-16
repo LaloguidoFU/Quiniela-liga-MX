@@ -212,7 +212,6 @@
         }
 
         .btn-whatsapp { background-color: var(--whatsapp-color); }
-        .btn-success { background-color: var(--secondary); }
 
         /* TABLAS AJUSTADAS AL ANCHO DEL IPHONE */
         .table-responsive {
@@ -314,7 +313,6 @@
             font-weight: bold;
             font-size: 0.7rem;
         }
-        
 
         /* MATRIZ SUPER COMPACTA SIN SCROLL HORIZONTAL */
         .matrix-table {
@@ -367,19 +365,6 @@
             font-size: 0.8rem;
             outline: none;
         }
-
-        .codigo-resultado {
-            margin-top: 8px;
-            background-color: #2f3542;
-            color: #f1f2f6;
-            padding: 10px;
-            border-radius: 6px;
-            font-family: monospace;
-            font-size: 0.7rem;
-            white-space: pre-wrap;
-            display: none;
-            word-break: break-all;
-        }
     </style>
 </head>
 <body>
@@ -389,10 +374,9 @@
         <p>Formato Progol Interactivo</p>
     </header>
 
-    <!-- ACCESOS RÁPIDOS PARA ABRIR LOS DOS MODALES SOLICITADOS -->
+    <!-- ACCESOS RÁPIDOS PARA ABRIR EL MODAL DE JUEGO -->
     <div class="action-triggers">
         <button class="btn-trigger btn-trigger-whatsapp" onclick="openModal('modal-registrar')">📝 Jugar (WhatsApp)</button>
-        <button class="btn-trigger" onclick="openModal('modal-admin')">⚙️ Procesar WhatsApp</button>
     </div>
 
     <!-- PANTALLA PRINCIPAL: TABLA DE POSICIONES Y MATRIZ -->
@@ -456,7 +440,7 @@
     </div>
 
 
-    <!-- MODAL 1: REGISTRAR MI QUINIELA -->
+    <!-- MODAL: REGISTRAR MI QUINIELA -->
     <div id="modal-registrar" class="modal-overlay" onclick="closeModalOnOverlay(event, 'modal-registrar')">
         <div class="modal-container">
             <div class="modal-header">
@@ -489,40 +473,6 @@
         </div>
     </div>
 
-
-    <!-- MODAL 2: PROCESAR WHATSAPP (PARA GITHUB) -->
-    <div id="modal-admin" class="modal-overlay" onclick="closeModalOnOverlay(event, 'modal-admin')">
-        <div class="modal-container">
-            <div class="modal-header">
-                <span class="modal-title">⚙️ PROCESAR WHATSAPP (A GITHUB)</span>
-                <button class="modal-close" onclick="closeModal('modal-admin')">Cerrar</button>
-            </div>
-            <div class="modal-body">
-                <div class="input-group">
-                    <label class="input-label" for="admin-captura-nombre">Nombre de tu amigo:</label>
-                    <input type="text" id="admin-captura-nombre" class="text-input" placeholder="Ej. Carlos">
-                </div>
-                <div class="table-responsive">
-                    <table class="progol-table">
-                        <thead>
-                            <tr>
-                                <th>Partido</th>
-                                <th style="width: 38px;">L</th>
-                                <th style="width: 38px;">E</th>
-                                <th style="width: 38px;">V</th>
-                            </tr>
-                        </thead>
-                        <tbody id="admin-capturador-body">
-                            <!-- Se genera dinámicamente -->
-                        </tbody>
-                    </table>
-                </div>
-                <button class="btn" onclick="generarCodigoParticipante()">Generar Código GitHub</button>
-                <div id="codigo-contenedor" class="codigo-resultado"></div>
-                <button id="btn-copiar" class="btn btn-success" style="display: none;" onclick="copiarCodigoAlPortapapeles()">📋 Copiar Código</button>
-            </div>
-        </div>
-    </div>
 
     <script>
         const WHATSAPP_NUMERO = "525546879724";
@@ -600,35 +550,6 @@
                     </td>
                 `;
                 registroBody.appendChild(tr);
-            });
-
-            // Captura de administrador
-            const adminCapturadorBody = document.getElementById("admin-capturador-body");
-            adminCapturadorBody.innerHTML = "";
-            partidos.forEach((partido, index) => {
-                const tr = document.createElement("tr");
-                tr.innerHTML = `
-                    <td class="partido-celda"><b>${index + 1}.</b> ${partido}</td>
-                    <td>
-                        <label class="progol-check user-check">
-                            <input type="radio" name="captura-partido-${index}" value="L">
-                            <span class="checkmark">L</span>
-                        </label>
-                    </td>
-                    <td>
-                        <label class="progol-check user-check">
-                            <input type="radio" name="captura-partido-${index}" value="E">
-                            <span class="checkmark">E</span>
-                        </label>
-                    </td>
-                    <td>
-                        <label class="progol-check user-check">
-                            <input type="radio" name="captura-partido-${index}" value="V">
-                            <span class="checkmark">V</span>
-                        </label>
-                    </td>
-                `;
-                adminCapturadorBody.appendChild(tr);
             });
 
             // Resultados reales del admin
@@ -726,48 +647,6 @@
             closeModal('modal-registrar');
         }
 
-        function generarCodigoParticipante() {
-            const nombreInput = document.getElementById("admin-captura-nombre").value.trim();
-            
-            if (!nombreInput) {
-                alert("⚠️ Por favor, ingresa el nombre del participante.");
-                return;
-            }
-
-            const nuevosPronosticos = [];
-            for (let i = 0; i < partidos.length; i++) {
-                const checkedRadio = document.querySelector(`input[name="captura-partido-${i}"]:checked`);
-                if (!checkedRadio) {
-                    alert(`⚠️ Te falta seleccionar el pronóstico para el Partido #${i + 1}.`);
-                    return;
-                }
-                nuevosPronosticos.push(`"${checkedRadio.value}"`);
-            }
-
-            const codigoGenerado = `{\n    nombre: "${nombreInput}",\n    pronosticos: [${nuevosPronosticos.join(", ")}]\n},`;
-
-            const contenedor = document.getElementById("codigo-contenedor");
-            contenedor.innerText = codigoGenerado;
-            contenedor.style.display = "block";
-            document.getElementById("btn-copiar").style.display = "block";
-        }
-
-        function copiarCodigoAlPortapapeles() {
-            const texto = document.getElementById("codigo-contenedor").innerText;
-            navigator.clipboard.writeText(texto).then(() => {
-                alert("📋 ¡Código copiado!");
-                
-                document.getElementById("admin-captura-nombre").value = "";
-                for (let i = 0; i < partidos.length; i++) {
-                    const radio = document.querySelector(`input[name="captura-partido-${i}"]:checked`);
-                    if (radio) radio.checked = false;
-                }
-                document.getElementById("codigo-contenedor").style.display = "none";
-                document.getElementById("btn-copiar").style.display = "none";
-                closeModal('modal-admin');
-            });
-        }
-
         function cambiarResultadoReal(index, valor) {
             resultadosReales[index] = valor;
             recalcularYRenderizar();
@@ -835,7 +714,8 @@
             });
         }
 
-        document.addEventListener("DOMContentLoaded", initQuiniela);
+        // Inicialización de la aplicación al cargar
+        window.onload = initQuiniela;
     </script>
 </body>
 </html>

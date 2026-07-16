@@ -429,17 +429,19 @@
     <div class="main-dashboard">
         <div class="card">
             <h2>🏆 Tabla de Posiciones</h2>
-            <table class="ranking-table">
-                <thead>
-                    <tr style="font-weight: bold; border-bottom: 2px solid var(--primary); font-size: 0.75rem;">
-                        <td style="width: 35px;">Pos</td>
-                        <td>Participante</td>
-                        <td style="text-align: right; padding-right: 10px;">Aciertos</td>
-                    </tr>
-                </thead>
-                <tbody id="ranking-body">
+            <div class="table-responsive">
+                <table class="ranking-table">
+                    <thead>
+                        <tr style="font-weight: bold; border-bottom: 2px solid var(--primary); font-size: 0.75rem;">
+                            <td style="width: 35px;">Pos</td>
+                            <td>Participante</td>
+                            <td style="text-align: right; padding-right: 10px;">Aciertos</td>
+                        </tr>
+                    </thead>
+                    <tbody id="ranking-body">
                     </tbody>
-            </table>
+                </table>
+            </div>
         </div>
 
         <div class="card">
@@ -451,10 +453,10 @@
                     <thead>
                         <tr id="matrix-header">
                             <th>Nombre</th>
-                            </tr>
+                        </tr>
                     </thead>
                     <tbody id="matrix-body">
-                        </tbody>
+                    </tbody>
                 </table>
             </div>
         </div>
@@ -473,7 +475,7 @@
                         </tr>
                     </thead>
                     <tbody id="admin-partidos-body">
-                        </tbody>
+                    </tbody>
                 </table>
             </div>
 
@@ -526,7 +528,7 @@
                             </tr>
                         </thead>
                         <tbody id="registro-partidos-body">
-                            </tbody>
+                        </tbody>
                     </table>
                 </div>
                 <button class="btn" onclick="registrarQuiniela()">💾 Guardar Quiniela</button>
@@ -913,23 +915,29 @@
                 tr.innerHTML = `
                     <td style="font-weight: bold;">${index + 1}</td>
                     <td>${p.nombre}</td>
-                    <td style="text-align: right;"><span class="badge-points">${p.puntos} pts</span></td>
+                    <td style="text-align: right; padding-right: 15px;">
+                        <span class="badge-points">${p.puntos}</span>
+                    </td>
                 `;
                 rankingBody.appendChild(tr);
             });
         }
 
         function filtrarParticipantes() {
-            const input = document.getElementById("search").value.toLowerCase().trim();
+            const input = document.getElementById("search").value.toLowerCase();
             participantes.forEach(p => {
-                const slug = generarSlug(p.nombre);
-                const fila = document.getElementById(`fila-${slug}`);
+                const fila = document.getElementById(`fila-${generarSlug(p.nombre)}`);
                 if (fila) {
-                    fila.style.display = p.nombre.toLowerCase().includes(input) ? "" : "none";
+                    if (p.nombre.toLowerCase().includes(input)) {
+                        fila.style.display = "";
+                    } else {
+                        fila.style.display = "none";
+                    }
                 }
             });
         }
 
+        // Inicializar al cargar la página
         window.onload = initQuiniela;
     </script>
 </body>

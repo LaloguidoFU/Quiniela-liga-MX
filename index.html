@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Quiniela Liga MX - Progol</title>
     <style>
         :root {
@@ -23,58 +23,47 @@
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             background-color: var(--bg);
             color: var(--text);
-            padding: 15px;
+            padding: 10px;
+            padding-bottom: 30px; /* Espacio extra abajo para la navegación por gestos del iPhone */
         }
 
         header {
             text-align: center;
             background: linear-gradient(135deg, var(--primary), var(--primary-dark));
             color: white;
-            padding: 20px;
+            padding: 15px 10px;
             border-radius: 12px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            margin-bottom: 15px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
         }
 
-        header h1 { font-size: 1.6rem; margin-bottom: 5px; }
-        header p { font-size: 0.9rem; opacity: 0.9; }
+        header h1 { font-size: 1.3rem; margin-bottom: 3px; letter-spacing: 0.5px; }
+        header p { font-size: 0.8rem; opacity: 0.9; }
 
         .container {
-            max-width: 1200px;
+            max-width: 100%;
             margin: 0 auto;
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 20px;
-        }
-
-        @media (min-width: 900px) {
-            .container {
-                grid-template-columns: 1fr 1fr;
-            }
-            .matrix-section, .posiciones-section {
-                grid-column: 1 / -1;
-            }
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
         }
 
         .card {
             background: var(--card-bg);
             border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
+            padding: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
         }
 
         .card h2 {
-            font-size: 1.2rem;
+            font-size: 1rem;
             color: var(--primary);
-            margin-bottom: 15px;
+            margin-bottom: 10px;
             border-bottom: 2px solid var(--bg);
-            padding-bottom: 8px;
+            padding-bottom: 6px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -82,24 +71,25 @@
 
         /* INPUTS Y BOTONES */
         .input-group {
-            margin-bottom: 15px;
+            margin-bottom: 12px;
         }
 
         .input-label {
             display: block;
             font-weight: bold;
-            margin-bottom: 5px;
-            font-size: 0.9rem;
+            margin-bottom: 4px;
+            font-size: 0.8rem;
         }
 
         .text-input {
             width: 100%;
-            padding: 10px 15px;
+            padding: 10px 12px;
             border: 2px solid #e4e7eb;
             border-radius: 8px;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             outline: none;
             transition: border-color 0.2s;
+            -webkit-appearance: none; /* Quita estilos nativos en iOS */
         }
 
         .text-input:focus {
@@ -110,44 +100,43 @@
             background-color: var(--accent);
             color: white;
             border: none;
-            padding: 12px 20px;
-            font-size: 1rem;
+            padding: 12px 15px;
+            font-size: 0.9rem;
             font-weight: bold;
             border-radius: 8px;
             cursor: pointer;
             width: 100%;
-            margin-top: 15px;
+            margin-top: 12px;
             transition: background-color 0.2s;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            height: 44px; /* Tamaño mínimo recomendado por Apple para pulsaciones táctiles */
         }
 
-        .btn:hover {
-            background-color: #2b52b3;
+        .btn:active {
+            opacity: 0.8;
         }
 
         .btn-whatsapp {
             background-color: var(--whatsapp-color);
             color: white;
         }
-        .btn-whatsapp:hover {
-            background-color: #20ba5a;
-        }
 
         .btn-success {
             background-color: var(--secondary);
-        }
-        .btn-success:hover {
-            background-color: #1aa159;
         }
 
         /* TABLA DE POSICIONES */
         .ranking-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 0.95rem;
+            font-size: 0.85rem;
         }
 
         .ranking-table th, .ranking-table td {
-            padding: 12px 10px;
+            padding: 10px 8px;
             text-align: left;
         }
 
@@ -158,45 +147,48 @@
         .badge-points {
             background: var(--secondary);
             color: white;
-            padding: 4px 10px;
-            border-radius: 12px;
+            padding: 3px 8px;
+            border-radius: 10px;
             font-weight: bold;
-            font-size: 0.85rem;
+            font-size: 0.75rem;
         }
 
         /* FORMATO BOLETA PROGOL */
         .progol-table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 10px;
+            margin-top: 5px;
         }
 
         .progol-table th {
             background-color: var(--primary);
             color: white;
-            padding: 10px;
-            font-size: 0.85rem;
+            padding: 8px 4px;
+            font-size: 0.75rem;
             text-align: center;
         }
 
         .progol-table td {
-            padding: 10px 5px;
+            padding: 8px 2px;
             border-bottom: 1px solid #e4e7eb;
             text-align: center;
-            font-size: 0.9rem;
+            font-size: 0.8rem;
         }
 
         .partido-celda {
             text-align: left !important;
             font-weight: 600;
-            max-width: 180px;
+            max-width: 130px; /* Acortado para iPhone */
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .progol-check {
             display: inline-block;
             position: relative;
-            width: 28px;
-            height: 28px;
+            width: 26px;
+            height: 26px;
             cursor: pointer;
         }
 
@@ -212,8 +204,8 @@
             position: absolute;
             top: 0;
             left: 0;
-            height: 28px;
-            width: 28px;
+            height: 26px;
+            width: 26px;
             background-color: #eee;
             border: 2px solid #ccc;
             border-radius: 4px;
@@ -221,19 +213,17 @@
             align-items: center;
             justify-content: center;
             font-weight: bold;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             color: #777;
             transition: all 0.2s;
         }
 
-        /* Color para el registro (Azul) */
         .progol-check.user-check input:checked ~ .checkmark {
             background-color: var(--accent);
             color: white;
             border-color: var(--accent);
         }
 
-        /* Color para los resultados reales (Verde) */
         .progol-check.admin-check input:checked ~ .checkmark {
             background-color: var(--secondary);
             color: white;
@@ -243,11 +233,11 @@
         /* BUSCADOR */
         .search-box {
             width: 100%;
-            padding: 10px 15px;
-            margin-bottom: 15px;
+            padding: 10px 12px;
+            margin-bottom: 10px;
             border: 2px solid #e4e7eb;
             border-radius: 8px;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             outline: none;
         }
 
@@ -255,30 +245,31 @@
             border-color: var(--primary);
         }
 
-        /* MATRIZ GENERAL */
+        /* MATRIZ GENERAL - Optimizada con scroll para móviles */
         .table-responsive {
             overflow-x: auto;
             border-radius: 8px;
             border: 1px solid #e4e7eb;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            -webkit-overflow-scrolling: touch; /* Scroll suave en iOS */
         }
 
         .matrix-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 0.85rem;
+            font-size: 0.75rem;
             white-space: nowrap;
         }
 
         .matrix-table th {
             background-color: var(--primary);
             color: white;
-            padding: 12px;
+            padding: 10px;
             font-weight: 600;
         }
 
         .matrix-table td {
-            padding: 10px;
+            padding: 8px;
             text-align: center;
             border: 1px solid #e4e7eb;
         }
@@ -291,6 +282,8 @@
             background-color: white;
             z-index: 2;
             border-right: 2px solid #cbd5e1;
+            padding-left: 10px;
+            padding-right: 10px;
         }
 
         .hit {
@@ -306,16 +299,17 @@
 
         /* AREA DE CODIGO GENERADO */
         .codigo-resultado {
-            margin-top: 15px;
+            margin-top: 10px;
             background-color: #2f3542;
             color: #f1f2f6;
-            padding: 15px;
+            padding: 12px;
             border-radius: 8px;
-            font-family: 'Courier New', Courier, monospace;
-            font-size: 0.85rem;
+            font-family: monospace;
+            font-size: 0.75rem;
             white-space: pre-wrap;
             display: none;
             border: 1px solid #57606f;
+            word-break: break-all;
         }
     </style>
 </head>
@@ -331,8 +325,8 @@
         <!-- SECCIÓN: REGISTRAR MI QUINIELA (ENVÍA POR WHATSAPP) -->
         <div class="card">
             <h2>📝 REGISTRAR MI QUINIELA</h2>
-            <p style="font-size: 0.85rem; color: #7f8c8d; margin-bottom: 10px;">
-                Escribe tu nombre, marca tus pronósticos y haz clic en el botón para enviármelos directamente por WhatsApp.
+            <p style="font-size: 0.75rem; color: #7f8c8d; margin-bottom: 10px; line-height: 1.2;">
+                Escribe tu nombre, marca tus pronósticos y envíamelos directo por WhatsApp.
             </p>
             <div class="input-group">
                 <label class="input-label" for="registro-nombre">Nombre del Participante:</label>
@@ -344,9 +338,9 @@
                     <thead>
                         <tr>
                             <th>Partido</th>
-                            <th style="width: 50px;">L</th>
-                            <th style="width: 50px;">E</th>
-                            <th style="width: 50px;">V</th>
+                            <th style="width: 44px;">L</th>
+                            <th style="width: 44px;">E</th>
+                            <th style="width: 44px;">V</th>
                         </tr>
                     </thead>
                     <tbody id="registro-partidos-body">
@@ -360,8 +354,8 @@
         <!-- SECCIÓN: CREADOR DE CÓDIGO (HERRAMIENTA PARA TI) -->
         <div class="card">
             <h2>⚙️ PROCESAR WHATSAPP (PARA GITHUB)</h2>
-            <p style="font-size: 0.85rem; color: #7f8c8d; margin-bottom: 10px;">
-                Copia aquí las jugadas que te manden tus amigos por WhatsApp para generar el código que va en GitHub.
+            <p style="font-size: 0.75rem; color: #7f8c8d; margin-bottom: 10px; line-height: 1.2;">
+                Copia las jugadas que te manden tus amigos para generar el código de GitHub.
             </p>
             <div class="input-group">
                 <label class="input-label" for="admin-captura-nombre">Nombre del Participante:</label>
@@ -373,9 +367,9 @@
                     <thead>
                         <tr>
                             <th>Partido</th>
-                            <th style="width: 50px;">L</th>
-                            <th style="width: 50px;">E</th>
-                            <th style="width: 50px;">V</th>
+                            <th style="width: 44px;">L</th>
+                            <th style="width: 44px;">E</th>
+                            <th style="width: 44px;">V</th>
                         </tr>
                     </thead>
                     <tbody id="admin-capturador-body">
@@ -392,18 +386,18 @@
 
         <!-- SECCIÓN: PANEL DE CONTROL: RESULTADOS REALES -->
         <div class="card">
-            <h2>🛠️ PANEL DE CONTROL (RESULTADOS REALES)</h2>
-            <p style="font-size: 0.85rem; color: #7f8c8d; margin-bottom: 10px;">
-                Marca aquí los resultados oficiales conforme terminen los partidos de la jornada.
+            <h2>🛠️ PANEL DE CONTROL (REALES)</h2>
+            <p style="font-size: 0.75rem; color: #7f8c8d; margin-bottom: 10px; line-height: 1.2;">
+                Marca aquí los resultados oficiales finales de la jornada.
             </p>
             <div class="table-responsive">
                 <table class="progol-table">
                     <thead>
                         <tr>
                             <th>Partido</th>
-                            <th style="width: 50px;">L</th>
-                            <th style="width: 50px;">E</th>
-                            <th style="width: 50px;">V</th>
+                            <th style="width: 44px;">L</th>
+                            <th style="width: 44px;">E</th>
+                            <th style="width: 44px;">V</th>
                         </tr>
                     </thead>
                     <tbody id="admin-partidos-body">
@@ -419,7 +413,7 @@
             <table class="ranking-table">
                 <thead>
                     <tr style="font-weight: bold; border-bottom: 2px solid var(--primary)">
-                        <td style="width: 40px;">Pos</td>
+                        <td style="width: 35px;">Pos</td>
                         <td>Participante</td>
                         <td style="text-align: right;">Aciertos</td>
                     </tr>
@@ -432,8 +426,8 @@
 
         <!-- MATRIZ DE PREDICCIONES -->
         <div class="card matrix-section">
-            <h2>📊 Matriz de Predicciones y Resultados</h2>
-            <input type="text" id="search" class="search-box" placeholder="🔍 Buscar participante por nombre..." oninput="filtrarParticipantes()">
+            <h2>📊 Matriz de Predicciones</h2>
+            <input type="text" id="search" class="search-box" placeholder="🔍 Buscar participante..." oninput="filtrarParticipantes()">
             
             <div class="table-responsive">
                 <table class="matrix-table">
@@ -453,12 +447,8 @@
     </div>
 
     <script>
-        // TU NÚMERO DE TELÉFONO EN FORMATO INTERNACIONAL (Con el prefijo internacional de México: 52)
         const WHATSAPP_NUMERO = "525546879724";
 
-        // ====================================================================
-        // CONFIGURACIÓN DE LOS PARTIDOS (Tus partidos originales restaurados)
-        // ====================================================================
         const partidos = [
             "Necaxa vs. Atlante",
             "Xolos vs. Tigres",
@@ -471,15 +461,8 @@
             "Querétaro vs. América"
         ];
 
-        // ====================================================================
-        // RESULTADOS REALES DE LOS PARTIDOS (Tus resultados restaurados)
-        // ====================================================================
-        // Pon el resultado real: "L" (Local), "E" (Empate), "V" (Visita) o "-" (No jugado)
         const resultadosReales = ["L", "V", "E", "-", "-", "-", "-", "-", "-"];
 
-        // ====================================================================
-        // PRONÓSTICOS DE LOS PARTICIPANTES (Tus participantes originales)
-        // ====================================================================
         const participantes = [
             { nombre: "Carlos", pronosticos: ["L", "L", "L", "L", "E", "V", "L", "L", "V"] },
             { nombre: "Ana", pronosticos: ["L", "V", "E", "L", "L", "L", "E", "V", "L"] },
@@ -496,7 +479,6 @@
         }
 
         function initQuiniela() {
-            // 1. Renderizar Panel de Registro de Participantes (Para que tus amigos seleccionen)
             const registroBody = document.getElementById("registro-partidos-body");
             registroBody.innerHTML = "";
             partidos.forEach((partido, index) => {
@@ -525,7 +507,6 @@
                 registroBody.appendChild(tr);
             });
 
-            // 2. Renderizar Panel Capturador para el Administrador (Tú)
             const adminCapturadorBody = document.getElementById("admin-capturador-body");
             adminCapturadorBody.innerHTML = "";
             partidos.forEach((partido, index) => {
@@ -554,7 +535,6 @@
                 adminCapturadorBody.appendChild(tr);
             });
 
-            // 3. Renderizar Panel Admin de Resultados Reales
             const adminBody = document.getElementById("admin-partidos-body");
             adminBody.innerHTML = "";
             partidos.forEach((partido, index) => {
@@ -585,18 +565,16 @@
                 adminBody.appendChild(tr);
             });
 
-            // 4. Renderizar Encabezados de la Tabla Matriz
             const headerRow = document.getElementById("matrix-header");
             while (headerRow.cells.length > 1) {
                 headerRow.deleteCell(1);
             }
             partidos.forEach((p, idx) => {
                 const th = document.createElement("th");
-                th.innerText = `P${idx+1}: ${p}`;
+                th.innerText = `P${idx+1}`;
                 headerRow.appendChild(th);
             });
 
-            // 5. Renderizar filas de predicciones de los participantes
             const matrixBody = document.getElementById("matrix-body");
             matrixBody.innerHTML = "";
             participantes.forEach(p => {
@@ -615,7 +593,6 @@
             recalcularYRenderizar();
         }
 
-        // FUNCIÓN: ARMA EL MENSAJE DE WHATSAPP Y ABRE LA APLICACIÓN
         function enviarPorWhatsApp() {
             const nombreInput = document.getElementById("registro-nombre").value.trim();
             
@@ -634,7 +611,6 @@
                 pronosticosList.push(`${i + 1}. ${partidos[i]} -> [${checkedRadio.value}]`);
             }
 
-            // Crear un mensaje ordenado y estético para enviar por WhatsApp
             let mensaje = `*🏆 MI QUINIELA LIGA MX 🏆*\n\n`;
             mensaje += `👤 *Participante:* ${nombreInput}\n\n`;
             mensaje += `📋 *Pronósticos:* \n`;
@@ -643,19 +619,13 @@
                 mensaje += `• ${item}\n`;
             });
 
-            mensaje += `\n_Enviado de forma automática desde la Web de la Quiniela._`;
+            mensaje += `\n_Enviado desde el móvil de forma automática._`;
 
-            // Convertir texto para que sea compatible con un link
             const urlMensaje = encodeURIComponent(mensaje);
-            
-            // Construir enlace de WhatsApp API
             const linkWhatsApp = `https://api.whatsapp.com/send?phone=${WHATSAPP_NUMERO}&text=${urlMensaje}`;
-            
-            // Redireccionar al usuario a WhatsApp
             window.open(linkWhatsApp, "_blank");
         }
 
-        // FUNCIÓN: Genera el código para copiar y pegar en GitHub (Para el Admin)
         function generarCodigoParticipante() {
             const nombreInput = document.getElementById("admin-captura-nombre").value.trim();
             
@@ -674,23 +644,19 @@
                 nuevosPronosticos.push(`"${checkedRadio.value}"`);
             }
 
-            // Formatear el texto final como objeto JS
             const codigoGenerado = `{\n    nombre: "${nombreInput}",\n    pronosticos: [${nuevosPronosticos.join(", ")}]\n},`;
 
-            // Mostrar el contenedor de código
             const contenedor = document.getElementById("codigo-contenedor");
             contenedor.innerText = codigoGenerado;
             contenedor.style.display = "block";
             document.getElementById("btn-copiar").style.display = "block";
         }
 
-        // Función para copiar fácilmente el código
         function copiarCodigoAlPortapapeles() {
             const texto = document.getElementById("codigo-contenedor").innerText;
             navigator.clipboard.writeText(texto).then(() => {
-                alert("📋 ¡Código copiado! Pégalo dentro de la lista de 'participantes' en tu archivo index.html de GitHub.");
+                alert("📋 ¡Código copiado! Pégalo dentro de la lista de 'participantes'.");
                 
-                // Limpiar el formulario de captura
                 document.getElementById("admin-captura-nombre").value = "";
                 for (let i = 0; i < partidos.length; i++) {
                     const radio = document.querySelector(`input[name="captura-partido-${i}"]:checked`);

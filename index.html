@@ -463,6 +463,9 @@
         </div>
     </div>
 
+<!-- 1. IMPORTAR LIBRERÍAS DE FIREBASE (Agrégalo justo antes de tu lógica) -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
     <script>
         const WHATSAPP_NUMERO = "525546879724";
@@ -479,18 +482,22 @@
             "Querétaro vs. América"
         ];
 
-        const resultadosReales = ["L", "V", "E", "-", "-", "-", "-", "-", "-"];
+        // ==================== CONFIGURACIÓN DE FIREBASE ====================
+        // COPIA Y PEGA TU URL DE FIREBASE AQUÍ ADENTRO:
+        const firebaseConfig = {
+            databaseURL: "https://quiniela-liga-mx-bee73-default-rtdb.firebaseio.com/" 
+        };
+        
+        // Inicializar Firebase
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+        // ===================================================================
 
-        const participantes = [
-            { nombre: "Carlos", pronosticos: ["L", "L", "L", "L", "E", "V", "L", "L", "V"] },
-            { nombre: "Ana", pronosticos: ["L", "V", "E", "L", "L", "L", "E", "V", "L"] },
-            { nombre: "Beto", pronosticos: ["E", "V", "L", "V", "E", "L", "L", "L", "V"] },
-            { nombre: "Daniela", pronosticos: ["L", "V", "E", "L", "L", "L", "E", "V", "L"] },
-            { nombre: "Prueba 1", pronosticos: ["L", "E", "L", "E", "V", "E", "L", "E", "V"] },
-            { nombre: "Chuma", pronosticos: ["E", "V", "V", "E", "L", "L", "L", "L", "V"] }
-        ];
+        // Variables globales que ahora se sincronizarán con Firebase
+        let resultadosReales = ["-", "-", "-", "-", "-", "-", "-", "-", "-"];
+        let participantes = [];
 
-        // LOGICA DE APERTURA Y CIERRE DE MODALES
+        // LÓGICA DE APERTURA Y CIERRE DE MODALES
         function openModal(modalId) {
             document.getElementById(modalId).classList.add('active');
         }
@@ -513,8 +520,43 @@
                 .replace(/[^a-z0-9]/g, "-");     
         }
 
+        // Escuchar cambios en la base de datos en tiempo real
+        function conectarFirebase() {
+            // Escuchar Resultados Oficiales
+            database.ref("resultadosReales").on("value", (snapshot) => {
+                const datos = snapshot.val();
+                if (datos) {
+                    resultadosReales = datos;
+                } else {
+                    // Si la base de datos está vacía, la inicializamos con guiones
+                    resultadosReales = Array(partidos.length).fill("-");
+                    database.ref("resultadosReales").set(resultadosReales);
+                }
+                actualizarInterfazResultadosAdmin();
+                recalcularYRenderizar();
+            });
+
+            // Escuchar Participantes
+            database.ref("participantes").on("value", (snapshot) => {
+                const datos = snapshot.val();
+                participantes = [];
+                if (datos) {
+                    // Convertir el objeto de Firebase en un Array
+                    Object.keys(datos).forEach(key => {
+                        participantes.push({
+                            id: key,
+                            nombre: datos[key].nombre,
+                            pronosticos: datos[key].pronosticos
+                        });
+                    });
+                }
+                construirMatrizVisual();
+                recalcularYRenderizar();
+            });
+        }
+
         function initQuiniela() {
-            // Registro de partidos
+            // 1. Generar formulario de registro para el usuario
             const registroBody = document.getElementById("registro-partidos-body");
             registroBody.innerHTML = "";
             partidos.forEach((partido, index) => {
@@ -543,7 +585,24 @@
                 registroBody.appendChild(tr);
             });
 
-            // Resultados reales del admin
+            // 2. Encabezados dinámicos de la matriz
+            const headerRow = document.getElementById("matrix-header");
+            while (headerRow.cells.length > 1) {
+                headerRow.deleteCell(1);
+            }
+            partidos.forEach((p) => {
+                const th = document.createElement("th");
+                th.innerText = p;
+                th.title = p;
+                headerRow.appendChild(th);
+            });
+
+            // 3. Conectarse a Firebase para traer la información dinámica
+            conectarFirebase();
+        }
+
+        // Renderiza el Panel de Control del Admin basado en lo que hay en memoria
+        function actualizarInterfazResultadosAdmin() {
             const adminBody = document.getElementById("admin-partidos-body");
             adminBody.innerHTML = "";
             partidos.forEach((partido, index) => {
@@ -573,20 +632,10 @@
                 `;
                 adminBody.appendChild(tr);
             });
+        }
 
-            // Encabezados de partidos en la Matriz (Dinámicos según el nombre real del enfrentamiento)
-            const headerRow = document.getElementById("matrix-header");
-            while (headerRow.cells.length > 1) {
-                headerRow.deleteCell(1);
-            }
-            partidos.forEach((p, idx) => {
-                const th = document.createElement("th");
-                th.innerText = p; // Muestra dinámicamente el nombre del partido (ej: Necaxa vs. Atlante)
-                th.title = p; // Tooltip con el nombre completo
-                headerRow.appendChild(th);
-            });
-
-            // Filas de la Matriz
+        // Genera la estructura HTML de la matriz con los participantes que vienen de Firebase
+        function construirMatrizVisual() {
             const matrixBody = document.getElementById("matrix-body");
             matrixBody.innerHTML = "";
             participantes.forEach(p => {
@@ -601,10 +650,16 @@
                 row.innerHTML = html;
                 matrixBody.appendChild(row);
             });
-
-            recalcularYRenderizar();
         }
 
+        // Se ejecuta cuando el administrador cambia una L, E o V en el Panel de Control
+        function cambiarResultadoReal(index, valor) {
+            resultadosReales[index] = valor;
+            // Guardar directamente en Firebase (esto actualizará la pantalla de todos los usuarios conectados)
+            database.ref("resultadosReales").set(resultadosReales);
+        }
+
+        // Guarda el participante en Firebase y envía la confirmación de WhatsApp
         function enviarPorWhatsApp() {
             const nombreInput = document.getElementById("registro-nombre").value.trim();
             
@@ -614,43 +669,52 @@
             }
 
             const pronosticosList = [];
+            const pronosticosPlanos = [];
+
             for (let i = 0; i < partidos.length; i++) {
                 const checkedOptions = document.querySelectorAll(`input[name="registro-partido-${i}"]:checked`);
                 
-                // Alerta 1: Validación de que se hayan llenado todos los partidos (los 9 obligatorios)
                 if (checkedOptions.length === 0) {
                     alert(`⚠️ Te faltan partidos por llenar. Asegúrate de marcar una opción para el Partido #${i + 1} (${partidos[i]}).`);
                     return;
                 }
                 
-                // Alerta 2: Validación anti-trampa (si marcaron más de un pronóstico por fila)
                 if (checkedOptions.length > 1) {
                     alert("⚠️ ¡Hey! te caché , solo puedes seleccionar una opcion");
                     return;
                 }
 
+                pronosticosPlanos.push(checkedOptions[0].value);
                 pronosticosList.push(`${i + 1}. ${partidos[i]} -> [${checkedOptions[0].value}]`);
             }
 
-            let mensaje = `*🏆 MI QUINIELA LIGA MX 🏆*\n\n`;
-            mensaje += `👤 *Participante:* ${nombreInput}\n\n`;
-            mensaje += `📋 *Pronósticos:* \n`;
-            
-            pronosticosList.forEach(item => {
-                mensaje += `• ${item}\n`;
+            // 1. REGISTRAR EN FIREBASE AUTOMÁTICAMENTE
+            const nuevoParticipanteRef = database.ref("participantes").push();
+            nuevoParticipanteRef.set({
+                nombre: nombreInput,
+                pronosticos: pronosticosPlanos
+            }).then(() => {
+                // 2. ENVIAR WHATSAPP (Como respaldo y aviso)
+                let mensaje = `*🏆 MI QUINIELA LIGA MX 🏆*\n\n`;
+                mensaje += `👤 *Participante:* ${nombreInput}\n\n`;
+                mensaje += `📋 *Pronósticos:* \n`;
+                
+                pronosticosList.forEach(item => {
+                    mensaje += `• ${item}\n`;
+                });
+
+                mensaje += `\n_Enviado de forma automática desde la Web._`;
+
+                const urlMensaje = encodeURIComponent(mensaje);
+                const linkWhatsApp = `https://api.whatsapp.com/send?phone=${WHATSAPP_NUMERO}&text=${urlMensaje}`;
+                window.open(linkWhatsApp, "_blank");
+                
+                // Limpiar campo de texto y cerrar modal
+                document.getElementById("registro-nombre").value = "";
+                closeModal('modal-registrar');
+            }).catch((error) => {
+                alert("Hubo un error al guardar tu quiniela en la base de datos: " + error.message);
             });
-
-            mensaje += `\n_Enviado de forma automática desde la Web._`;
-
-            const urlMensaje = encodeURIComponent(mensaje);
-            const linkWhatsApp = `https://api.whatsapp.com/send?phone=${WHATSAPP_NUMERO}&text=${urlMensaje}`;
-            window.open(linkWhatsApp, "_blank");
-            closeModal('modal-registrar');
-        }
-
-        function cambiarResultadoReal(index, valor) {
-            resultadosReales[index] = valor;
-            recalcularYRenderizar();
         }
 
         function recalcularYRenderizar() {
@@ -715,7 +779,6 @@
             });
         }
 
-        // Inicialización de la aplicación al cargar
         window.onload = initQuiniela;
     </script>
 </body>

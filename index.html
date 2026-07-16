@@ -46,30 +46,31 @@
         header h1 { font-size: 1.1rem; margin-bottom: 2px; }
         header p { font-size: 0.75rem; opacity: 0.9; }
 
-        /* BOTONES DE ACCIÓN RÁPIDA PARA ABRIR MODALES */
+        /* BOTONES DE ACCIÓN RÁPIDA - CENTRADO Y MÁS PEQUEÑO */
         .action-triggers {
             display: flex;
-            gap: 6px;
+            justify-content: center;
             margin-bottom: 8px;
         }
 
         .btn-trigger {
-            flex: 1;
             background-color: var(--accent);
             color: white;
             border: none;
-            padding: 10px 4px;
-            font-size: 0.75rem;
+            padding: 6px 16px; /* Reducido para hacerlo más compacto */
+            font-size: 0.72rem; /* Texto un poco más pequeño */
             font-weight: bold;
-            border-radius: 8px;
+            border-radius: 20px; /* Bordes más redondeados para diseño compacto */
             cursor: pointer;
             text-align: center;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            height: 40px;
+            height: 32px; /* Altura más baja */
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 4px;
+            width: auto; /* Evita que ocupe todo el ancho */
+            min-width: 140px;
         }
 
         .btn-trigger-whatsapp {
@@ -374,7 +375,7 @@
         <p>Formato Progol Interactivo</p>
     </header>
 
-    <!-- ACCESOS RÁPIDOS PARA ABRIR EL MODAL DE JUEGO -->
+    <!-- ACCESOS RÁPIDOS PARA ABRIR EL MODAL DE JUEGO (CENTRADITO Y COMPACTO) -->
     <div class="action-triggers">
         <button class="btn-trigger btn-trigger-whatsapp" onclick="openModal('modal-registrar')">📝 Jugar (WhatsApp)</button>
     </div>

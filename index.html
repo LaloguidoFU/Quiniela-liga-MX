@@ -73,10 +73,6 @@
             min-width: 140px;
         }
 
-        .btn-trigger-whatsapp {
-            background-color: var(--whatsapp-color);
-        }
-
         /* VISTA PRINCIPAL CONTENEDORA */
         .main-dashboard {
             flex: 1;
@@ -211,8 +207,6 @@
             gap: 6px;
             height: 38px;
         }
-
-        .btn-whatsapp { background-color: var(--whatsapp-color); }
 
         /* TABLAS AJUSTADAS AL ANCHO DEL IPHONE */
         .table-responsive {
@@ -376,7 +370,7 @@
     </header>
 
     <div class="action-triggers">
-        <button class="btn-trigger btn-trigger-whatsapp" onclick="openModal('modal-registrar')">📝Registrar mi quiniela</button>
+        <button class="btn-trigger" onclick="openModal('modal-registrar')">📝 Registrar mi quiniela</button>
     </div>
 
     <div class="main-dashboard">
@@ -458,18 +452,17 @@
                             </tbody>
                     </table>
                 </div>
-                <button class="btn btn-whatsapp" onclick="enviarPorWhatsApp()">💬 Enviar por WhatsApp</button>
+                <!-- Se cambió la clase y la función del botón de envío -->
+                <button class="btn" onclick="registrarQuiniela()">💾 Guardar Quiniela</button>
             </div>
         </div>
     </div>
 
-<!-- 1. IMPORTAR LIBRERÍAS DE FIREBASE (Agrégalo justo antes de tu lógica) -->
+    <!-- IMPORTAR LIBRERÍAS DE FIREBASE -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
     <script>
-        const WHATSAPP_NUMERO = "525546879724";
-
         const partidos = [
             "Necaxa vs. Atlante",
             "Xolos vs. Tigres",
@@ -483,7 +476,6 @@
         ];
 
         // ==================== CONFIGURACIÓN DE FIREBASE ====================
-        // COPIA Y PEGA TU URL DE FIREBASE AQUÍ ADENTRO:
         const firebaseConfig = {
             databaseURL: "https://quiniela-liga-mx-bee73-default-rtdb.firebaseio.com/" 
         };
@@ -493,7 +485,7 @@
         const database = firebase.database();
         // ===================================================================
 
-        // Variables globales que ahora se sincronizarán con Firebase
+        // Variables globales
         let resultadosReales = ["-", "-", "-", "-", "-", "-", "-", "-", "-"];
         let participantes = [];
 
@@ -528,7 +520,6 @@
                 if (datos) {
                     resultadosReales = datos;
                 } else {
-                    // Si la base de datos está vacía, la inicializamos con guiones
                     resultadosReales = Array(partidos.length).fill("-");
                     database.ref("resultadosReales").set(resultadosReales);
                 }
@@ -541,7 +532,6 @@
                 const datos = snapshot.val();
                 participantes = [];
                 if (datos) {
-                    // Convertir el objeto de Firebase en un Array
                     Object.keys(datos).forEach(key => {
                         participantes.push({
                             id: key,
@@ -597,11 +587,11 @@
                 headerRow.appendChild(th);
             });
 
-            // 3. Conectarse a Firebase para traer la información dinámica
+            // 3. Conectarse a Firebase
             conectarFirebase();
         }
 
-        // Renderiza el Panel de Control del Admin basado en lo que hay en memoria
+        // Renderiza el Panel de Control del Admin
         function actualizarInterfazResultadosAdmin() {
             const adminBody = document.getElementById("admin-partidos-body");
             adminBody.innerHTML = "";
@@ -634,7 +624,7 @@
             });
         }
 
-        // Genera la estructura HTML de la matriz con los participantes que vienen de Firebase
+        // Genera la estructura HTML de la matriz
         function construirMatrizVisual() {
             const matrixBody = document.getElementById("matrix-body");
             matrixBody.innerHTML = "";
@@ -652,23 +642,21 @@
             });
         }
 
-        // Se ejecuta cuando el administrador cambia una L, E o V en el Panel de Control
+        // Se ejecuta cuando el administrador cambia una L, E o V
         function cambiarResultadoReal(index, valor) {
             resultadosReales[index] = valor;
-            // Guardar directamente en Firebase (esto actualizará la pantalla de todos los usuarios conectados)
             database.ref("resultadosReales").set(resultadosReales);
         }
 
-        // Guarda el participante en Firebase y envía la confirmación de WhatsApp
-        function enviarPorWhatsApp() {
+        // NUEVA FUNCIÓN: Guarda el participante en Firebase SIN redirigir a WhatsApp
+        function registrarQuiniela() {
             const nombreInput = document.getElementById("registro-nombre").value.trim();
             
             if (!nombreInput) {
-                alert("⚠️ Por favor, escribe tu nombre antes de enviar.");
+                alert("⚠️ Por favor, escribe tu nombre antes de guardar.");
                 return;
             }
 
-            const pronosticosList = [];
             const pronosticosPlanos = [];
 
             for (let i = 0; i < partidos.length; i++) {
@@ -680,37 +668,30 @@
                 }
                 
                 if (checkedOptions.length > 1) {
-                    alert("⚠️ ¡Hey! te caché , solo puedes seleccionar una opcion");
+                    alert("⚠️ ¡Hey! te caché, solo puedes seleccionar una opción");
                     return;
                 }
 
                 pronosticosPlanos.push(checkedOptions[0].value);
-                pronosticosList.push(`${i + 1}. ${partidos[i]} -> [${checkedOptions[0].value}]`);
             }
 
-            // 1. REGISTRAR EN FIREBASE AUTOMÁTICAMENTE
+            // Guardar en Firebase directamente
             const nuevoParticipanteRef = database.ref("participantes").push();
             nuevoParticipanteRef.set({
                 nombre: nombreInput,
                 pronosticos: pronosticosPlanos
             }).then(() => {
-                // 2. ENVIAR WHATSAPP (Como respaldo y aviso)
-                let mensaje = `*🏆 MI QUINIELA LIGA MX 🏆*\n\n`;
-                mensaje += `👤 *Participante:* ${nombreInput}\n\n`;
-                mensaje += `📋 *Pronósticos:* \n`;
+                // Notificación de éxito
+                alert("🎉 ¡Tu quiniela ha sido registrada exitosamente!");
                 
-                pronosticosList.forEach(item => {
-                    mensaje += `• ${item}\n`;
-                });
-
-                mensaje += `\n_Enviado de forma automática desde la Web._`;
-
-                const urlMensaje = encodeURIComponent(mensaje);
-                const linkWhatsApp = `https://api.whatsapp.com/send?phone=${WHATSAPP_NUMERO}&text=${urlMensaje}`;
-                window.open(linkWhatsApp, "_blank");
-                
-                // Limpiar campo de texto y cerrar modal
+                // Limpiar campos de registro (Nombre y radios)
                 document.getElementById("registro-nombre").value = "";
+                for (let i = 0; i < partidos.length; i++) {
+                    const checkedOption = document.querySelector(`input[name="registro-partido-${i}"]:checked`);
+                    if (checkedOption) checkedOption.checked = false;
+                }
+                
+                // Cerrar modal
                 closeModal('modal-registrar');
             }).catch((error) => {
                 alert("Hubo un error al guardar tu quiniela en la base de datos: " + error.message);

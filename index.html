@@ -26,196 +26,193 @@
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             background-color: var(--bg);
             color: var(--text);
-            padding: 10px;
-            padding-bottom: 30px; /* Espacio extra abajo para la navegación por gestos del iPhone */
+            padding: 8px 8px env(safe-area-inset-bottom) 8px;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden; /* Evita scrolls generales en la pantalla del celular */
         }
 
         header {
             text-align: center;
             background: linear-gradient(135deg, var(--primary), var(--primary-dark));
             color: white;
-            padding: 15px 10px;
-            border-radius: 12px;
-            margin-bottom: 15px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            padding: 10px;
+            border-radius: 10px;
+            margin-bottom: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
 
-        header h1 { font-size: 1.3rem; margin-bottom: 3px; letter-spacing: 0.5px; }
-        header p { font-size: 0.8rem; opacity: 0.9; }
+        header h1 { font-size: 1.1rem; margin-bottom: 2px; }
+        header p { font-size: 0.75rem; opacity: 0.9; }
 
-        .container {
-            max-width: 100%;
-            margin: 0 auto;
+        /* MENÚ DE PESTAÑAS (TABS) ESTILO APP */
+        .tabs-nav {
             display: flex;
-            flex-direction: column;
-            gap: 15px;
+            background: #e4e7eb;
+            border-radius: 8px;
+            padding: 3px;
+            margin-bottom: 8px;
+            gap: 4px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            background: none;
+            border: none;
+            padding: 8px 4px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            color: #57606f;
+            border-radius: 6px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s;
+        }
+
+        .tab-btn.active {
+            background: white;
+            color: var(--primary);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+        }
+
+        /* CONTENEDOR DE PESTAÑAS */
+        .tab-content {
+            flex: 1;
+            overflow-y: auto; /* Solo scrolea el contenido de la pestaña activa si es muy largo */
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
         }
 
         .card {
             background: var(--card-bg);
-            border-radius: 12px;
-            padding: 15px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            border-radius: 10px;
+            padding: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+            margin-bottom: 8px;
         }
 
         .card h2 {
-            font-size: 1rem;
+            font-size: 0.9rem;
             color: var(--primary);
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             border-bottom: 2px solid var(--bg);
-            padding-bottom: 6px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            padding-bottom: 4px;
         }
 
-        /* INPUTS Y BOTONES */
+        /* CAMPOS DE TEXTO Y BOTONES */
         .input-group {
-            margin-bottom: 12px;
+            margin-bottom: 8px;
         }
 
         .input-label {
             display: block;
             font-weight: bold;
-            margin-bottom: 4px;
-            font-size: 0.8rem;
+            margin-bottom: 2px;
+            font-size: 0.75rem;
         }
 
         .text-input {
             width: 100%;
-            padding: 10px 12px;
-            border: 2px solid #e4e7eb;
-            border-radius: 8px;
-            font-size: 0.9rem;
+            padding: 8px 10px;
+            border: 1.5px solid #e4e7eb;
+            border-radius: 6px;
+            font-size: 0.85rem;
             outline: none;
-            transition: border-color 0.2s;
-            -webkit-appearance: none; /* Quita estilos nativos en iOS */
-        }
-
-        .text-input:focus {
-            border-color: var(--accent);
+            -webkit-appearance: none;
         }
 
         .btn {
             background-color: var(--accent);
             color: white;
             border: none;
-            padding: 12px 15px;
-            font-size: 0.9rem;
+            padding: 8px 12px;
+            font-size: 0.85rem;
             font-weight: bold;
-            border-radius: 8px;
+            border-radius: 6px;
             cursor: pointer;
             width: 100%;
-            margin-top: 12px;
-            transition: background-color 0.2s;
+            margin-top: 8px;
             display: inline-flex;
             justify-content: center;
             align-items: center;
-            gap: 8px;
-            height: 44px; /* Tamaño mínimo recomendado por Apple para pulsaciones táctiles */
+            gap: 6px;
+            height: 38px;
         }
 
-        .btn:active {
-            opacity: 0.8;
+        .btn-whatsapp { background-color: var(--whatsapp-color); }
+        .btn-success { background-color: var(--secondary); }
+
+        /* TABLAS AJUSTADAS AL ANCHO DEL IPHONE */
+        .table-responsive {
+            border-radius: 6px;
+            border: 1px solid #e4e7eb;
+            overflow-x: hidden; /* Forzamos a que no haya scroll a la derecha */
         }
 
-        .btn-whatsapp {
-            background-color: var(--whatsapp-color);
-            color: white;
-        }
-
-        .btn-success {
-            background-color: var(--secondary);
-        }
-
-        /* TABLA DE POSICIONES */
-        .ranking-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.85rem;
-        }
-
-        .ranking-table th, .ranking-table td {
-            padding: 10px 8px;
-            text-align: left;
-        }
-
-        .ranking-table tr {
-            border-bottom: 1px solid #f1f2f6;
-        }
-
-        .badge-points {
-            background: var(--secondary);
-            color: white;
-            padding: 3px 8px;
-            border-radius: 10px;
-            font-weight: bold;
-            font-size: 0.75rem;
-        }
-
-        /* FORMATO BOLETA PROGOL */
         .progol-table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 5px;
         }
 
         .progol-table th {
             background-color: var(--primary);
             color: white;
-            padding: 8px 4px;
-            font-size: 0.75rem;
+            padding: 6px;
+            font-size: 0.7rem;
             text-align: center;
         }
 
         .progol-table td {
-            padding: 8px 2px;
+            padding: 6px 2px;
             border-bottom: 1px solid #e4e7eb;
             text-align: center;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
         }
 
         .partido-celda {
             text-align: left !important;
             font-weight: 600;
-            max-width: 130px; /* Acortado para iPhone */
+            max-width: 110px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            padding-left: 4px !important;
         }
 
+        /* CHECKMARKS REDUCIDOS */
         .progol-check {
             display: inline-block;
             position: relative;
-            width: 26px;
-            height: 26px;
-            cursor: pointer;
+            width: 22px;
+            height: 22px;
         }
 
         .progol-check input {
             position: absolute;
             opacity: 0;
-            cursor: pointer;
-            height: 0;
             width: 0;
+            height: 0;
         }
 
         .checkmark {
             position: absolute;
             top: 0;
             left: 0;
-            height: 26px;
-            width: 26px;
+            height: 22px;
+            width: 22px;
             background-color: #eee;
-            border: 2px solid #ccc;
+            border: 1.5px solid #ccc;
             border-radius: 4px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: bold;
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             color: #777;
-            transition: all 0.2s;
         }
 
         .progol-check.user-check input:checked ~ .checkmark {
@@ -230,60 +227,55 @@
             border-color: var(--secondary);
         }
 
-        /* BUSCADOR */
-        .search-box {
+        /* TABLA DE POSICIONES */
+        .ranking-table {
             width: 100%;
-            padding: 10px 12px;
-            margin-bottom: 10px;
-            border: 2px solid #e4e7eb;
+            border-collapse: collapse;
+            font-size: 0.8rem;
+        }
+
+        .ranking-table td {
+            padding: 8px 6px;
+        }
+
+        .badge-points {
+            background: var(--secondary);
+            color: white;
+            padding: 2px 6px;
             border-radius: 8px;
-            font-size: 0.9rem;
-            outline: none;
+            font-weight: bold;
+            font-size: 0.7rem;
         }
 
-        .search-box:focus {
-            border-color: var(--primary);
-        }
-
-        /* MATRIZ GENERAL - Optimizada con scroll para móviles */
-        .table-responsive {
-            overflow-x: auto;
-            border-radius: 8px;
-            border: 1px solid #e4e7eb;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-            -webkit-overflow-scrolling: touch; /* Scroll suave en iOS */
-        }
-
+        /* MATRIZ SUPER COMPACTA SIN SCROLL HORIZONTAL */
         .matrix-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 0.75rem;
+            font-size: 0.7rem;
+            table-layout: fixed; /* Fuerza a respetar el ancho exacto */
+        }
+
+        .matrix-table th, .matrix-table td {
+            border: 1px solid #cbd5e1;
+            text-align: center;
+            padding: 6px 1px;
+            overflow: hidden;
+            text-overflow: ellipsis;
             white-space: nowrap;
         }
 
-        .matrix-table th {
-            background-color: var(--primary);
-            color: white;
-            padding: 10px;
-            font-weight: 600;
-        }
-
-        .matrix-table td {
-            padding: 8px;
-            text-align: center;
-            border: 1px solid #e4e7eb;
-        }
-
-        .matrix-table td:first-child {
+        /* Primera columna (Nombres) */
+        .matrix-table th:first-child, .matrix-table td:first-child {
+            width: 75px;
             text-align: left;
             font-weight: bold;
-            position: sticky;
-            left: 0;
-            background-color: white;
-            z-index: 2;
-            border-right: 2px solid #cbd5e1;
-            padding-left: 10px;
-            padding-right: 10px;
+            padding-left: 4px;
+            background-color: #f8fafc;
+        }
+
+        /* Columnas de los partidos (Ancho uniforme) */
+        .matrix-table th:not(:first-child), .matrix-table td:not(:first-child) {
+            width: calc((100% - 75px) / 9);
         }
 
         .hit {
@@ -297,18 +289,26 @@
             color: var(--miss-text) !important;
         }
 
-        /* AREA DE CODIGO GENERADO */
+        .search-box {
+            width: 100%;
+            padding: 8px 10px;
+            margin-bottom: 8px;
+            border: 1.5px solid #e4e7eb;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            outline: none;
+        }
+
         .codigo-resultado {
-            margin-top: 10px;
+            margin-top: 8px;
             background-color: #2f3542;
             color: #f1f2f6;
-            padding: 12px;
-            border-radius: 8px;
+            padding: 10px;
+            border-radius: 6px;
             font-family: monospace;
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             white-space: pre-wrap;
             display: none;
-            border: 1px solid #57606f;
             word-break: break-all;
         }
     </style>
@@ -320,16 +320,18 @@
         <p>Formato Progol Interactivo</p>
     </header>
 
-    <div class="container">
-        
-        <!-- SECCIÓN: REGISTRAR MI QUINIELA (ENVÍA POR WHATSAPP) -->
+    <nav class="tabs-nav">
+        <button class="tab-btn active" onclick="switchTab('tab-registrar')">📝 Jugar</button>
+        <button class="tab-btn" onclick="switchTab('tab-posiciones')">🏆 Posiciones</button>
+        <button class="tab-btn" onclick="switchTab('tab-matriz')">📊 Matriz</button>
+        <button class="tab-btn" onclick="switchTab('tab-admin')">⚙️ Admin</button>
+    </nav>
+
+    <div id="tab-registrar" class="tab-content active">
         <div class="card">
             <h2>📝 REGISTRAR MI QUINIELA</h2>
-            <p style="font-size: 0.75rem; color: #7f8c8d; margin-bottom: 10px; line-height: 1.2;">
-                Escribe tu nombre, marca tus pronósticos y envíamelos directo por WhatsApp.
-            </p>
-            <div class="input-group">
-                <label class="input-label" for="registro-nombre">Nombre del Participante:</label>
+            <div class="input-group" style="margin-top: 6px;">
+                <label class="input-label" for="registro-nombre">Tu Nombre:</label>
                 <input type="text" id="registro-nombre" class="text-input" placeholder="Ej. Juan Pérez">
             </div>
             
@@ -338,94 +340,38 @@
                     <thead>
                         <tr>
                             <th>Partido</th>
-                            <th style="width: 44px;">L</th>
-                            <th style="width: 44px;">E</th>
-                            <th style="width: 44px;">V</th>
+                            <th style="width: 38px;">L</th>
+                            <th style="width: 38px;">E</th>
+                            <th style="width: 38px;">V</th>
                         </tr>
                     </thead>
                     <tbody id="registro-partidos-body">
-                        <!-- Se genera dinámicamente -->
-                    </tbody>
+                        </tbody>
                 </table>
             </div>
             <button class="btn btn-whatsapp" onclick="enviarPorWhatsApp()">💬 Enviar por WhatsApp</button>
         </div>
+    </div>
 
-        <!-- SECCIÓN: CREADOR DE CÓDIGO (HERRAMIENTA PARA TI) -->
+    <div id="tab-posiciones" class="tab-content">
         <div class="card">
-            <h2>⚙️ PROCESAR WHATSAPP (PARA GITHUB)</h2>
-            <p style="font-size: 0.75rem; color: #7f8c8d; margin-bottom: 10px; line-height: 1.2;">
-                Copia las jugadas que te manden tus amigos para generar el código de GitHub.
-            </p>
-            <div class="input-group">
-                <label class="input-label" for="admin-captura-nombre">Nombre del Participante:</label>
-                <input type="text" id="admin-captura-nombre" class="text-input" placeholder="Nombre de tu amigo">
-            </div>
-            
-            <div class="table-responsive">
-                <table class="progol-table">
-                    <thead>
-                        <tr>
-                            <th>Partido</th>
-                            <th style="width: 44px;">L</th>
-                            <th style="width: 44px;">E</th>
-                            <th style="width: 44px;">V</th>
-                        </tr>
-                    </thead>
-                    <tbody id="admin-capturador-body">
-                        <!-- Se genera dinámicamente -->
-                    </tbody>
-                </table>
-            </div>
-            <button class="btn" onclick="generarCodigoParticipante()">Generar Código para GitHub</button>
-            
-            <!-- Aquí se muestra el código listo para copiar -->
-            <div id="codigo-contenedor" class="codigo-resultado"></div>
-            <button id="btn-copiar" class="btn btn-success" style="display: none;" onclick="copiarCodigoAlPortapapeles()">📋 Copiar Código</button>
-        </div>
-
-        <!-- SECCIÓN: PANEL DE CONTROL: RESULTADOS REALES -->
-        <div class="card">
-            <h2>🛠️ PANEL DE CONTROL (REALES)</h2>
-            <p style="font-size: 0.75rem; color: #7f8c8d; margin-bottom: 10px; line-height: 1.2;">
-                Marca aquí los resultados oficiales finales de la jornada.
-            </p>
-            <div class="table-responsive">
-                <table class="progol-table">
-                    <thead>
-                        <tr>
-                            <th>Partido</th>
-                            <th style="width: 44px;">L</th>
-                            <th style="width: 44px;">E</th>
-                            <th style="width: 44px;">V</th>
-                        </tr>
-                    </thead>
-                    <tbody id="admin-partidos-body">
-                        <!-- Se genera dinámicamente -->
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- TABLA DE POSICIONES -->
-        <div class="card posiciones-section">
-            <h2>Tabla de Posiciones</h2>
+            <h2>🏆 Tabla de Posiciones</h2>
             <table class="ranking-table">
                 <thead>
-                    <tr style="font-weight: bold; border-bottom: 2px solid var(--primary)">
+                    <tr style="font-weight: bold; border-bottom: 2px solid var(--primary); font-size: 0.75rem;">
                         <td style="width: 35px;">Pos</td>
                         <td>Participante</td>
-                        <td style="text-align: right;">Aciertos</td>
+                        <td style="text-align: right; padding-right: 10px;">Aciertos</td>
                     </tr>
                 </thead>
                 <tbody id="ranking-body">
-                    <!-- Se llena dinámicamente -->
-                </tbody>
+                    </tbody>
             </table>
         </div>
+    </div>
 
-        <!-- MATRIZ DE PREDICCIONES -->
-        <div class="card matrix-section">
+    <div id="tab-matriz" class="tab-content">
+        <div class="card">
             <h2>📊 Matriz de Predicciones</h2>
             <input type="text" id="search" class="search-box" placeholder="🔍 Buscar participante..." oninput="filtrarParticipantes()">
             
@@ -433,308 +379,14 @@
                 <table class="matrix-table">
                     <thead>
                         <tr id="matrix-header">
-                            <th>Participante</th>
-                            <!-- Los encabezados de los partidos se generan dinámicamente -->
-                        </tr>
+                            <th>Nombre</th>
+                            </tr>
                     </thead>
                     <tbody id="matrix-body">
-                        <!-- Las predicciones se cargan dinámicamente -->
-                    </tbody>
+                        </tbody>
                 </table>
             </div>
         </div>
-
     </div>
 
-    <script>
-        const WHATSAPP_NUMERO = "525546879724";
-
-        const partidos = [
-            "Necaxa vs. Atlante",
-            "Xolos vs. Tigres",
-            "San Luis vs. Cruz Azul",
-            "León vs. Atlas",
-            "Juárez vs. Puebla",
-            "Pumas vs. Pachuca",
-            "Chivas vs. Toluca",
-            "Monterrey vs. Santos",
-            "Querétaro vs. América"
-        ];
-
-        const resultadosReales = ["L", "V", "E", "-", "-", "-", "-", "-", "-"];
-
-        const participantes = [
-            { nombre: "Carlos", pronosticos: ["L", "L", "L", "L", "E", "V", "L", "L", "V"] },
-            { nombre: "Ana", pronosticos: ["L", "V", "E", "L", "L", "L", "E", "V", "L"] },
-            { nombre: "Beto", pronosticos: ["E", "V", "L", "V", "E", "L", "L", "L", "V"] },
-            { nombre: "Daniela", pronosticos: ["L", "V", "E", "L", "L", "L", "E", "V", "L"] }
-        ];
-
-        function generarSlug(text) {
-            return text.trim()
-                .toLowerCase()
-                .normalize("NFD")
-                .replace(/[\u0300-\u036f]/g, "") 
-                .replace(/[^a-z0-9]/g, "-");     
-        }
-
-        function initQuiniela() {
-            const registroBody = document.getElementById("registro-partidos-body");
-            registroBody.innerHTML = "";
-            partidos.forEach((partido, index) => {
-                const tr = document.createElement("tr");
-                tr.innerHTML = `
-                    <td class="partido-celda"><b>${index + 1}.</b> ${partido}</td>
-                    <td>
-                        <label class="progol-check user-check">
-                            <input type="radio" name="registro-partido-${index}" value="L">
-                            <span class="checkmark">L</span>
-                        </label>
-                    </td>
-                    <td>
-                        <label class="progol-check user-check">
-                            <input type="radio" name="registro-partido-${index}" value="E">
-                            <span class="checkmark">E</span>
-                        </label>
-                    </td>
-                    <td>
-                        <label class="progol-check user-check">
-                            <input type="radio" name="registro-partido-${index}" value="V">
-                            <span class="checkmark">V</span>
-                        </label>
-                    </td>
-                `;
-                registroBody.appendChild(tr);
-            });
-
-            const adminCapturadorBody = document.getElementById("admin-capturador-body");
-            adminCapturadorBody.innerHTML = "";
-            partidos.forEach((partido, index) => {
-                const tr = document.createElement("tr");
-                tr.innerHTML = `
-                    <td class="partido-celda"><b>${index + 1}.</b> ${partido}</td>
-                    <td>
-                        <label class="progol-check user-check">
-                            <input type="radio" name="captura-partido-${index}" value="L">
-                            <span class="checkmark">L</span>
-                        </label>
-                    </td>
-                    <td>
-                        <label class="progol-check user-check">
-                            <input type="radio" name="captura-partido-${index}" value="E">
-                            <span class="checkmark">E</span>
-                        </label>
-                    </td>
-                    <td>
-                        <label class="progol-check user-check">
-                            <input type="radio" name="captura-partido-${index}" value="V">
-                            <span class="checkmark">V</span>
-                        </label>
-                    </td>
-                `;
-                adminCapturadorBody.appendChild(tr);
-            });
-
-            const adminBody = document.getElementById("admin-partidos-body");
-            adminBody.innerHTML = "";
-            partidos.forEach((partido, index) => {
-                const tr = document.createElement("tr");
-                const resActual = resultadosReales[index] || "-";
-
-                tr.innerHTML = `
-                    <td class="partido-celda"><b>${index + 1}.</b> ${partido}</td>
-                    <td>
-                        <label class="progol-check admin-check">
-                            <input type="radio" name="admin-partido-${index}" value="L" ${resActual === 'L' ? 'checked' : ''} onchange="cambiarResultadoReal(${index}, 'L')">
-                            <span class="checkmark">L</span>
-                        </label>
-                    </td>
-                    <td>
-                        <label class="progol-check admin-check">
-                            <input type="radio" name="admin-partido-${index}" value="E" ${resActual === 'E' ? 'checked' : ''} onchange="cambiarResultadoReal(${index}, 'E')">
-                            <span class="checkmark">E</span>
-                        </label>
-                    </td>
-                    <td>
-                        <label class="progol-check admin-check">
-                            <input type="radio" name="admin-partido-${index}" value="V" ${resActual === 'V' ? 'checked' : ''} onchange="cambiarResultadoReal(${index}, 'V')">
-                            <span class="checkmark">V</span>
-                        </label>
-                    </td>
-                `;
-                adminBody.appendChild(tr);
-            });
-
-            const headerRow = document.getElementById("matrix-header");
-            while (headerRow.cells.length > 1) {
-                headerRow.deleteCell(1);
-            }
-            partidos.forEach((p, idx) => {
-                const th = document.createElement("th");
-                th.innerText = `P${idx+1}`;
-                headerRow.appendChild(th);
-            });
-
-            const matrixBody = document.getElementById("matrix-body");
-            matrixBody.innerHTML = "";
-            participantes.forEach(p => {
-                const row = document.createElement("tr");
-                row.id = `fila-${generarSlug(p.nombre)}`;
-                
-                let html = `<td>${p.nombre.trim()}</td>`;
-                p.pronosticos.forEach((pron, i) => {
-                    html += `<td data-partido-index="${i}">${pron}</td>`;
-                });
-                
-                row.innerHTML = html;
-                matrixBody.appendChild(row);
-            });
-
-            recalcularYRenderizar();
-        }
-
-        function enviarPorWhatsApp() {
-            const nombreInput = document.getElementById("registro-nombre").value.trim();
-            
-            if (!nombreInput) {
-                alert("⚠️ Por favor, escribe tu nombre antes de enviar.");
-                return;
-            }
-
-            const pronosticosList = [];
-            for (let i = 0; i < partidos.length; i++) {
-                const checkedRadio = document.querySelector(`input[name="registro-partido-${i}"]:checked`);
-                if (!checkedRadio) {
-                    alert(`⚠️ Te falta seleccionar tu pronóstico para el Partido #${i + 1}.`);
-                    return;
-                }
-                pronosticosList.push(`${i + 1}. ${partidos[i]} -> [${checkedRadio.value}]`);
-            }
-
-            let mensaje = `*🏆 MI QUINIELA LIGA MX 🏆*\n\n`;
-            mensaje += `👤 *Participante:* ${nombreInput}\n\n`;
-            mensaje += `📋 *Pronósticos:* \n`;
-            
-            pronosticosList.forEach(item => {
-                mensaje += `• ${item}\n`;
-            });
-
-            mensaje += `\n_Enviado desde el móvil de forma automática._`;
-
-            const urlMensaje = encodeURIComponent(mensaje);
-            const linkWhatsApp = `https://api.whatsapp.com/send?phone=${WHATSAPP_NUMERO}&text=${urlMensaje}`;
-            window.open(linkWhatsApp, "_blank");
-        }
-
-        function generarCodigoParticipante() {
-            const nombreInput = document.getElementById("admin-captura-nombre").value.trim();
-            
-            if (!nombreInput) {
-                alert("⚠️ Por favor, ingresa el nombre del participante.");
-                return;
-            }
-
-            const nuevosPronosticos = [];
-            for (let i = 0; i < partidos.length; i++) {
-                const checkedRadio = document.querySelector(`input[name="captura-partido-${i}"]:checked`);
-                if (!checkedRadio) {
-                    alert(`⚠️ Te falta seleccionar el pronóstico para el Partido #${i + 1}.`);
-                    return;
-                }
-                nuevosPronosticos.push(`"${checkedRadio.value}"`);
-            }
-
-            const codigoGenerado = `{\n    nombre: "${nombreInput}",\n    pronosticos: [${nuevosPronosticos.join(", ")}]\n},`;
-
-            const contenedor = document.getElementById("codigo-contenedor");
-            contenedor.innerText = codigoGenerado;
-            contenedor.style.display = "block";
-            document.getElementById("btn-copiar").style.display = "block";
-        }
-
-        function copiarCodigoAlPortapapeles() {
-            const texto = document.getElementById("codigo-contenedor").innerText;
-            navigator.clipboard.writeText(texto).then(() => {
-                alert("📋 ¡Código copiado! Pégalo dentro de la lista de 'participantes'.");
-                
-                document.getElementById("admin-captura-nombre").value = "";
-                for (let i = 0; i < partidos.length; i++) {
-                    const radio = document.querySelector(`input[name="captura-partido-${i}"]:checked`);
-                    if (radio) radio.checked = false;
-                }
-                document.getElementById("codigo-contenedor").style.display = "none";
-                document.getElementById("btn-copiar").style.display = "none";
-            });
-        }
-
-        function cambiarResultadoReal(index, valor) {
-            resultadosReales[index] = valor;
-            recalcularYRenderizar();
-        }
-
-        function recalcularYRenderizar() {
-            participantes.forEach(p => p.puntos = 0);
-
-            for (let i = 0; i < partidos.length; i++) {
-                const resultadoOficial = resultadosReales[i];
-                
-                participantes.forEach(p => {
-                    const pronosticoUser = p.pronosticos[i];
-                    const fila = document.getElementById(`fila-${generarSlug(p.nombre)}`);
-                    if (fila) {
-                        const celda = fila.querySelector(`td[data-partido-index="${i}"]`);
-                        if (celda) {
-                            celda.className = ""; 
-                            if (resultadoOficial !== "-") {
-                                if (pronosticoUser === resultadoOficial) {
-                                    celda.classList.add("hit");
-                                    p.puntos += 1;
-                                } else {
-                                    celda.classList.add("miss");
-                                }
-                            }
-                        }
-                    }
-                });
-            }
-
-            actualizarRanking();
-        }
-
-        function actualizarRanking() {
-            const rankingBody = document.getElementById("ranking-body");
-            rankingBody.innerHTML = "";
-
-            const participantesOrdenados = [...participantes].sort((a, b) => {
-                if (b.puntos !== a.puntos) {
-                    return b.puntos - a.puntos;
-                }
-                return a.nombre.localeCompare(b.nombre);
-            });
-
-            participantesOrdenados.forEach((p, index) => {
-                const tr = document.createElement("tr");
-                tr.innerHTML = `
-                    <td style="font-weight: bold;">${index + 1}</td>
-                    <td>${p.nombre}</td>
-                    <td style="text-align: right;"><span class="badge-points">${p.puntos} pts</span></td>
-                `;
-                rankingBody.appendChild(tr);
-            });
-        }
-
-        function filtrarParticipantes() {
-            const input = document.getElementById("search").value.toLowerCase().trim();
-            participantes.forEach(p => {
-                const slug = generarSlug(p.nombre);
-                const fila = document.getElementById(`fila-${slug}`);
-                if (fila) {
-                    fila.style.display = p.nombre.toLowerCase().includes(input) ? "" : "none";
-                }
-            });
-        }
-
-        document.addEventListener("DOMContentLoaded", initQuiniela);
-    </script>
-</body>
-</html>
+    <div id="tab-admin" class="tab-content">

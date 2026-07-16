@@ -57,19 +57,19 @@
             background-color: var(--accent);
             color: white;
             border: none;
-            padding: 6px 16px; /* Reducido para hacerlo más compacto */
-            font-size: 0.72rem; /* Texto un poco más pequeño */
+            padding: 6px 16px; 
+            font-size: 0.72rem; 
             font-weight: bold;
-            border-radius: 20px; /* Bordes más redondeados para diseño compacto */
+            border-radius: 20px; 
             cursor: pointer;
             text-align: center;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            height: 32px; /* Altura más baja */
+            height: 32px; 
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 4px;
-            width: auto; /* Evita que ocupe todo el ancho */
+            width: auto; 
             min-width: 140px;
         }
 
@@ -375,9 +375,9 @@
         <p>Formato Progol Interactivo</p>
     </header>
 
-    <!-- ACCESOS RÁPIDOS PARA ABRIR EL MODAL DE JUEGO (CENTRADITO Y COMPACTO) -->
+    <!-- ACCESOS RÁPIDOS PARA ABRIR EL MODAL DE JUEGO -->
     <div class="action-triggers">
-        <button class="btn-trigger btn-trigger-whatsapp" onclick="openModal('modal-registrar')">📝 Registrar mi Quiniela</button>
+        <button class="btn-trigger btn-trigger-whatsapp" onclick="openModal('modal-registrar')">📝 Jugar (WhatsApp)</button>
     </div>
 
     <!-- PANTALLA PRINCIPAL: TABLA DE POSICIONES Y MATRIZ -->
@@ -401,7 +401,7 @@
 
         <!-- MATRIZ GENERAL -->
         <div class="card">
-            <h2>📊 Predicciones de los participantes</h2>
+            <h2>📊 Matriz de Predicciones</h2>
             <input type="text" id="search" class="search-box" placeholder="🔍 Buscar participante..." oninput="filtrarParticipantes()">
             
             <div class="table-responsive">
@@ -624,12 +624,21 @@
 
             const pronosticosList = [];
             for (let i = 0; i < partidos.length; i++) {
-                const checkedRadio = document.querySelector(`input[name="registro-partido-${i}"]:checked`);
-                if (!checkedRadio) {
-                    alert(`⚠️ Te falta seleccionar tu pronóstico para el Partido #${i + 1}.`);
+                const checkedOptions = document.querySelectorAll(`input[name="registro-partido-${i}"]:checked`);
+                
+                // Alerta 1: Validación de que se hayan llenado todos los partidos (los 9 obligatorios)
+                if (checkedOptions.length === 0) {
+                    alert(`⚠️ Te faltan partidos por llenar. Asegúrate de marcar una opción para el Partido #${i + 1} (${partidos[i]}).`);
                     return;
                 }
-                pronosticosList.push(`${i + 1}. ${partidos[i]} -> [${checkedRadio.value}]`);
+                
+                // Alerta 2: Validación anti-trampa (si marcaron más de un pronóstico por fila)
+                if (checkedOptions.length > 1) {
+                    alert("⚠️ ¡Hey! te caché , solo puedes seleccionar una opcion");
+                    return;
+                }
+
+                pronosticosList.push(`${i + 1}. ${partidos[i]} -> [${checkedOptions[0].value}]`);
             }
 
             let mensaje = `*🏆 MI QUINIELA LIGA MX 🏆*\n\n`;

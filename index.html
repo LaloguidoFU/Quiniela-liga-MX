@@ -413,6 +413,19 @@
         .btn-delete:hover {
             background-color: #d63031;
         }
+
+        /* NUEVOS CAMPOS EDICIÓN CALENDARIO */
+        .admin-edit-calendar-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 6px;
+        }
+        .admin-edit-calendar-row span {
+            font-size: 0.75rem;
+            font-weight: bold;
+            width: 18px;
+        }
     </style>
 </head>
 <body>
@@ -464,6 +477,8 @@
         <!-- TARJETA PANEL DE CONTROL SEGURO (OCULTA POR DEFECTO) -->
         <div class="card" id="admin-panel-card">
             <h2>🛠️ PANEL DE CONTROL (ADMINISTRADOR)</h2>
+            
+            <h3 style="font-size: 0.8rem; margin: 10px 0 6px 0; color: var(--accent);">✔️ Capturar Resultados Reales</h3>
             <div class="table-responsive">
                 <table class="progol-table">
                     <thead>
@@ -479,8 +494,18 @@
                 </table>
             </div>
 
-            <!-- NUEVA SECCIÓN: GESTIONAR PARTICIPANTES -->
-            <h2 style="margin-top: 15px; font-size: 0.9rem; color: #d63031;">🗑️ Eliminar Participantes</h2>
+            <!-- NUEVO SUB-PANEL: EDITAR CALENDARIO DE PARTIDOS -->
+            <h3 style="font-size: 0.8rem; margin: 20px 0 8px 0; color: var(--accent); border-top: 1.5px solid #f1f2f6; padding-top: 12px;">📝 Editar Calendario de Partidos (Siguiente Jornada)</h3>
+            <div style="background: #f8fafc; padding: 10px; border-radius: 6px; border: 1px solid #e4e7eb;">
+                <p style="font-size: 0.65rem; color: #7f8c8d; margin-bottom: 10px;">Modifica los partidos para la siguiente jornada. Al guardar, se borrarán las elecciones anteriores de resultados oficiales de la semana.</p>
+                <div id="admin-inputs-partidos-container">
+                    <!-- Se generarán 9 inputs dinámicos aquí -->
+                </div>
+                <button class="btn" style="background-color: var(--secondary); margin-top: 10px;" onclick="guardarNuevoCalendario()">🔄 Actualizar Calendario Oficial</button>
+            </div>
+
+            <!-- SECCIÓN: GESTIONAR PARTICIPANTES -->
+            <h3 style="font-size: 0.8rem; margin: 20px 0 6px 0; color: #d63031; border-top: 1.5px solid #f1f2f6; padding-top: 12px;">🗑️ Eliminar Participantes</h3>
             <div class="table-responsive" style="max-height: 150px; overflow-y: auto; margin-top: 5px;">
                 <table class="admin-list-table">
                     <thead>
@@ -541,7 +566,8 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
     <script>
-        const partidos = [
+        // Array de partidos inicial de respaldo (si Firebase está vacío)
+        const PARTIDOS_INICIALES = [
             "Necaxa vs. Atlante",
             "Xolos vs. Tigres",
             "San Luis vs. Cruz Azul",
@@ -558,20 +584,18 @@
             databaseURL: "https://quiniela-liga-mx-bee73-default-rtdb.firebaseio.com/" 
         };
         
-        // Inicializar Firebase
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
         // ===================================================================
 
-        // 🔑 CONTRASEÑA DEL ADMINISTRADOR
         const PASSWORD_ADMIN = "admin123";
 
-        // Variables globales
-        let resultadosReales = ["-", "-", "-", "-", "-", "-", "-", "-", "-"];
+        // Variables dinámicas cargadas de la nube
+        let partidos = [];
+        let resultadosReales = [];
         let participantes = [];
         let esAdmin = false;
 
-        // LÓGICA DE APERTURA Y CIERRE DE MODALES
         function openModal(modalId) {
             document.getElementById(modalId).classList.add('active');
         }
@@ -594,7 +618,6 @@
                 .replace(/[^a-z0-9]/g, "-");     
         }
 
-        // --- SISTEMA DE AUTENTICACIÓN ADMIN ---
         function verificarSesionAdminExistente() {
             if (localStorage.getItem("sesion_quiniela_admin") === "activa") {
                 esAdmin = true;
@@ -604,7 +627,6 @@
 
         function autenticarAdministrador() {
             const passIntroducida = prompt("🔑 Ingresa la contraseña de administrador:");
-            
             if (passIntroducida === null) return; 
 
             if (passIntroducida === PASSWORD_ADMIN) {
@@ -631,30 +653,46 @@
             if (visible) {
                 panelCard.style.display = "block";
                 authContainer.style.display = "none";
-                actualizarTablaEliminacion(); // Renderizar lista de eliminación
+                actualizarInputsCalendarioAdmin(); // Llenar inputs de edición de partidos
+                actualizarTablaEliminacion(); 
             } else {
                 panelCard.style.display = "none";
                 authContainer.style.display = "block";
             }
         }
-        // --------------------------------------
 
-        // Escuchar cambios en la base de datos en tiempo real
         function conectarFirebase() {
-            // Escuchar Resultados Oficiales
-            database.ref("resultadosReales").on("value", (snapshot) => {
-                const datos = snapshot.val();
-                if (datos) {
-                    resultadosReales = datos;
+            // 1. Escuchar Partidos Oficiales de la Jornada
+            database.ref("partidosActuales").on("value", (snapshot) => {
+                const datosPartidos = snapshot.val();
+                if (datosPartidos && datosPartidos.length === 9) {
+                    partidos = datosPartidos;
                 } else {
-                    resultadosReales = Array(partidos.length).fill("-");
+                    partidos = [...PARTIDOS_INICIALES];
+                    database.ref("partidosActuales").set(partidos);
+                }
+                
+                // Redibujar UI dependiente del calendario
+                actualizarCabeceraMatrizYModalRegistro();
+                actualizarInterfazResultadosAdmin();
+                actualizarInputsCalendarioAdmin();
+                recalcularYRenderizar();
+            });
+
+            // 2. Escuchar Resultados Oficiales
+            database.ref("resultadosReales").on("value", (snapshot) => {
+                const datosResultados = snapshot.val();
+                if (datosResultados) {
+                    resultadosReales = datosResultados;
+                } else {
+                    resultadosReales = Array(9).fill("-");
                     database.ref("resultadosReales").set(resultadosReales);
                 }
                 actualizarInterfazResultadosAdmin();
                 recalcularYRenderizar();
             });
 
-            // Escuchar Participantes
+            // 3. Escuchar Participantes
             database.ref("participantes").on("value", (snapshot) => {
                 const datos = snapshot.val();
                 participantes = [];
@@ -670,14 +708,14 @@
                 construirMatrizVisual();
                 recalcularYRenderizar();
                 if (esAdmin) {
-                    actualizarTablaEliminacion(); // Actualizar la lista si eres admin activo
+                    actualizarTablaEliminacion();
                 }
             });
         }
 
-        function initQuiniela() {
-            verificarSesionAdminExistente();
-
+        // Construye dinámicamente las vistas que dependen de los partidos
+        function actualizarCabeceraMatrizYModalRegistro() {
+            // Actualizar Modal de Registro
             const registroBody = document.getElementById("registro-partidos-body");
             registroBody.innerHTML = "";
             partidos.forEach((partido, index) => {
@@ -706,6 +744,7 @@
                 registroBody.appendChild(tr);
             });
 
+            // Actualizar encabezado de la Matriz Visual
             const headerRow = document.getElementById("matrix-header");
             while (headerRow.cells.length > 1) {
                 headerRow.deleteCell(1);
@@ -716,14 +755,67 @@
                 th.title = p;
                 headerRow.appendChild(th);
             });
-
-            conectarFirebase();
+            
+            // Reconstruir cuerpo de matriz
+            construirMatrizVisual();
         }
 
-        // Renderiza el Panel de Control del Admin
+        // Genera los 9 campos de entrada en el panel admin para editar partidos
+        function actualizarInputsCalendarioAdmin() {
+            const container = document.getElementById("admin-inputs-partidos-container");
+            if (!container) return;
+            container.innerHTML = "";
+
+            for (let i = 0; i < 9; i++) {
+                const partidoActualVal = partidos[i] || "";
+                const div = document.createElement("div");
+                div.className = "admin-edit-calendar-row";
+                div.innerHTML = `
+                    <span>${i + 1}.</span>
+                    <input type="text" id="edit-partido-input-${i}" class="text-input" style="padding: 4px 8px; font-size: 0.75rem;" value="${partidoActualVal}">
+                `;
+                container.appendChild(div);
+            }
+        }
+
+        // Guarda el nuevo calendario y limpia los aciertos reales anteriores
+        function guardarNuevoCalendario() {
+            if (!esAdmin) {
+                alert("⚠️ Error: No tienes permisos de administrador.");
+                return;
+            }
+
+            const confirmacion = confirm("⚠️ Al cambiar el calendario:\n\n1. Se guardarán los nuevos partidos.\n2. Se reiniciarán todos los Resultados Oficiales (L/E/V) de la semana.\n\n¿Deseas continuar?");
+            if (!confirmacion) return;
+
+            const nuevosPartidos = [];
+            for (let i = 0; i < 9; i++) {
+                const inputVal = document.getElementById(`edit-partido-input-${i}`).value.trim();
+                if (!inputVal) {
+                    alert(`⚠️ Por favor, ingresa un nombre válido para el partido #${i + 1}.`);
+                    return;
+                }
+                nuevosPartidos.push(inputVal);
+            }
+
+            // Subir nuevos partidos e iniciar en "-" los resultados oficiales
+            const vacioResultados = Array(9).fill("-");
+
+            Promise.all([
+                database.ref("partidosActuales").set(nuevosPartidos),
+                database.ref("resultadosReales").set(vacioResultados)
+            ]).then(() => {
+                alert("🎉 ¡Calendario actualizado con éxito! Los resultados de juego se han reiniciado para la nueva jornada.");
+            }).catch((error) => {
+                alert("❌ Ocurrió un error al actualizar los datos en Firebase: " + error.message);
+            });
+        }
+
         function actualizarInterfazResultadosAdmin() {
             const adminBody = document.getElementById("admin-partidos-body");
+            if (!adminBody) return;
             adminBody.innerHTML = "";
+            
             partidos.forEach((partido, index) => {
                 const tr = document.createElement("tr");
                 const resActual = resultadosReales[index] || "-";
@@ -753,9 +845,9 @@
             });
         }
 
-        // NUEVA FUNCIÓN: Genera la tabla para que el administrador elimine registros
         function actualizarTablaEliminacion() {
             const eliminarBody = document.getElementById("admin-eliminar-body");
+            if (!eliminarBody) return;
             eliminarBody.innerHTML = "";
             
             if (participantes.length === 0) {
@@ -763,7 +855,6 @@
                 return;
             }
 
-            // Ordenar por nombre para ubicarlos fácil
             const listaOrdenada = [...participantes].sort((a, b) => a.nombre.localeCompare(b.nombre));
 
             listaOrdenada.forEach(p => {
@@ -778,29 +869,23 @@
             });
         }
 
-        // NUEVA FUNCIÓN: Elimina de Firebase
         function eliminarParticipante(id, nombre) {
             if (!esAdmin) {
                 alert("⚠️ Error: No tienes permisos de administrador.");
                 return;
             }
 
-            const confirmar = confirm(`⚠ ¿Estás completamente seguro de eliminar permanentemente la quiniela de "${nombre}"? Esta acción no se puede deshacer.`);
-            
+            const confirmar = confirm(`⚠ ¿Estás seguro de eliminar de forma permanente la quiniela de "${nombre}"?`);
             if (confirmar) {
                 database.ref("participantes").child(id).remove()
-                    .then(() => {
-                        alert(`✅ La quiniela de "${nombre}" fue eliminada exitosamente.`);
-                    })
-                    .catch((error) => {
-                        alert("Hubo un error al intentar borrar el registro: " + error.message);
-                    });
+                    .then(() => alert(`✅ Quiniela de "${nombre}" eliminada.`))
+                    .catch((error) => alert("Error: " + error.message));
             }
         }
 
-        // Genera la estructura HTML de la matriz
         function construirMatrizVisual() {
             const matrixBody = document.getElementById("matrix-body");
+            if (!matrixBody) return;
             matrixBody.innerHTML = "";
             participantes.forEach(p => {
                 const row = document.createElement("tr");
@@ -827,27 +912,19 @@
 
         function registrarQuiniela() {
             const nombreInput = document.getElementById("registro-nombre").value.trim();
-            
             if (!nombreInput) {
                 alert("⚠️ Por favor, escribe tu nombre antes de guardar.");
                 return;
             }
 
             const pronosticosPlanos = [];
-
             for (let i = 0; i < partidos.length; i++) {
                 const checkedOptions = document.querySelectorAll(`input[name="registro-partido-${i}"]:checked`);
                 
                 if (checkedOptions.length === 0) {
-                    alert(`⚠️ Te faltan partidos por llenar. Asegúrate de marcar una opción para el Partido #${i + 1} (${partidos[i]}).`);
+                    alert(`⚠️ Te faltan partidos por llenar. Asegúrate de marcar una opción para el Partido #${i + 1}.`);
                     return;
                 }
-                
-                if (checkedOptions.length > 1) {
-                    alert("⚠️ ¡Hey! te caché, solo puedes seleccionar una opción");
-                    return;
-                }
-
                 pronosticosPlanos.push(checkedOptions[0].value);
             }
 
@@ -857,13 +934,11 @@
                 pronosticos: pronosticosPlanos
             }).then(() => {
                 alert("🎉 ¡Tu quiniela ha sido registrada exitosamente!");
-                
                 document.getElementById("registro-nombre").value = "";
                 for (let i = 0; i < partidos.length; i++) {
                     const checkedOption = document.querySelector(`input[name="registro-partido-${i}"]:checked`);
                     if (checkedOption) checkedOption.checked = false;
                 }
-                
                 closeModal('modal-registrar');
             }).catch((error) => {
                 alert("Hubo un error al guardar tu quiniela: " + error.message);
@@ -895,12 +970,12 @@
                     }
                 });
             }
-
             actualizarRanking();
         }
 
         function actualizarRanking() {
             const rankingBody = document.getElementById("ranking-body");
+            if (!rankingBody) return;
             rankingBody.innerHTML = "";
 
             const participantesOrdenados = [...participantes].sort((a, b) => {
@@ -937,7 +1012,11 @@
             });
         }
 
-        // Inicializar al cargar la página
+        function initQuiniela() {
+            verificarSesionAdminExistente();
+            conectarFirebase();
+        }
+
         window.onload = initQuiniela;
     </script>
 </body>

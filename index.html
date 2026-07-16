@@ -46,7 +46,7 @@
         header h1 { font-size: 1.1rem; margin-bottom: 2px; }
         header p { font-size: 0.75rem; opacity: 0.9; }
 
-        /* BOTONES DE ACCIÓN RÁPIDA (ABREN MODALES) */
+        /* BOTONES DE ACCIÓN RÁPIDA PARA ABRIR MODALES */
         .action-triggers {
             display: flex;
             gap: 6px;
@@ -76,7 +76,7 @@
             background-color: var(--whatsapp-color);
         }
 
-        /* VISTA PRINCIPAL (DIVIDIDA) */
+        /* VISTA PRINCIPAL CONTENEDORA */
         .main-dashboard {
             flex: 1;
             display: flex;
@@ -109,7 +109,7 @@
             height: 100%;
             background-color: rgba(0,0,0,0.5);
             display: flex;
-            align-items: flex-end; /* Abre desde abajo tipo iOS */
+            align-items: flex-end;
             justify-content: center;
             z-index: 1000;
             opacity: 0;
@@ -251,7 +251,7 @@
             padding-left: 4px !important;
         }
 
-        /* CHECKMARKS */
+        /* CHECKMARKS REDUCIDOS */
         .progol-check {
             display: inline-block;
             position: relative;
@@ -303,7 +303,7 @@
         }
 
         .ranking-table td {
-            padding: 6px;
+            padding: 8px 6px;
         }
 
         .badge-points {
@@ -388,13 +388,13 @@
         <p>Formato Progol Interactivo</p>
     </header>
 
-    <!-- DISPARADORES DE ACCIÓN RÁPIDA (MODALES) -->
+    <!-- ACCESOS RÁPIDOS PARA ABRIR LOS DOS MODALES SOLICITADOS -->
     <div class="action-triggers">
         <button class="btn-trigger btn-trigger-whatsapp" onclick="openModal('modal-registrar')">📝 Jugar (WhatsApp)</button>
         <button class="btn-trigger" onclick="openModal('modal-admin')">⚙️ Procesar WhatsApp</button>
     </div>
 
-    <!-- VISTA PRINCIPAL: POSICIONES Y MATRIZ -->
+    <!-- PANTALLA PRINCIPAL: TABLA DE POSICIONES Y MATRIZ -->
     <div class="main-dashboard">
         <!-- TABLA DE POSICIONES -->
         <div class="card">
@@ -433,9 +433,9 @@
             </div>
         </div>
 
-        <!-- PANEL DE CONTROL RESULTADOS REALES (Siempre visible abajo) -->
+        <!-- PANEL DE CONTROL (RESULTADOS REALES) -->
         <div class="card">
-            <h2>🛠️ Resultados Reales (Oficiales)</h2>
+            <h2>🛠️ PANEL DE CONTROL (RESULTADOS REALES)</h2>
             <div class="table-responsive">
                 <table class="progol-table">
                     <thead>
@@ -547,7 +547,7 @@
             { nombre: "Daniela", pronosticos: ["L", "V", "E", "L", "L", "L", "E", "V", "L"] }
         ];
 
-        // FUNCIONES DE CONTROL DE MODALES
+        // LOGICA DE APERTURA Y CIERRE DE MODALES
         function openModal(modalId) {
             document.getElementById(modalId).classList.add('active');
         }
@@ -571,7 +571,7 @@
         }
 
         function initQuiniela() {
-            // Registro de partidos (Modal 1)
+            // Registro de partidos
             const registroBody = document.getElementById("registro-partidos-body");
             registroBody.innerHTML = "";
             partidos.forEach((partido, index) => {
@@ -600,7 +600,7 @@
                 registroBody.appendChild(tr);
             });
 
-            // Captura de administrador (Modal 2)
+            // Captura de administrador
             const adminCapturadorBody = document.getElementById("admin-capturador-body");
             adminCapturadorBody.innerHTML = "";
             partidos.forEach((partido, index) => {
@@ -629,7 +629,7 @@
                 adminCapturadorBody.appendChild(tr);
             });
 
-            // Resultados reales del admin (Sección fija)
+            // Resultados reales del admin
             const adminBody = document.getElementById("admin-partidos-body");
             adminBody.innerHTML = "";
             partidos.forEach((partido, index) => {
@@ -660,7 +660,7 @@
                 adminBody.appendChild(tr);
             });
 
-            // Encabezados de partidos en la Matriz
+            // Encabezados de partidos en la Matriz (Solo números P1, P2... para no desbordar)
             const headerRow = document.getElementById("matrix-header");
             while (headerRow.cells.length > 1) {
                 headerRow.deleteCell(1);

@@ -385,6 +385,34 @@
             color: var(--primary);
             border-color: var(--primary);
         }
+
+        /* ESTILOS DE LA TABLA DE ELIMINACIÓN */
+        .admin-list-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.8rem;
+            margin-top: 10px;
+        }
+
+        .admin-list-table td {
+            padding: 6px 4px;
+            border-bottom: 1px solid #f1f2f6;
+        }
+
+        .btn-delete {
+            background-color: #ff7675;
+            color: white;
+            border: none;
+            padding: 3px 8px;
+            font-size: 0.7rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .btn-delete:hover {
+            background-color: #d63031;
+        }
     </style>
 </head>
 <body>
@@ -448,7 +476,24 @@
                         </tbody>
                 </table>
             </div>
-            <button class="btn-admin-auth" style="margin-top: 10px; width: 100%; border-style: solid; border-color: #fee2e2; color: var(--miss-text);" onclick="cerrarSesionAdmin()">🔒 Cerrar Sesión Administrador</button>
+
+            <!-- NUEVA SECCIÓN: GESTIONAR PARTICIPANTES -->
+            <h2 style="margin-top: 15px; font-size: 0.9rem; color: #d63031;">🗑️ Eliminar Participantes</h2>
+            <div class="table-responsive" style="max-height: 150px; overflow-y: auto; margin-top: 5px;">
+                <table class="admin-list-table">
+                    <thead>
+                        <tr style="background: #f8fafc; font-weight: bold; font-size: 0.7rem;">
+                            <td style="padding: 4px;">Nombre</td>
+                            <td style="text-align: right; padding-right: 10px; width: 80px;">Acción</td>
+                        </tr>
+                    </thead>
+                    <tbody id="admin-eliminar-body">
+                        <!-- Se llena dinámicamente -->
+                    </tbody>
+                </table>
+            </div>
+
+            <button class="btn-admin-auth" style="margin-top: 15px; width: 100%; border-style: solid; border-color: #fee2e2; color: var(--miss-text);" onclick="cerrarSesionAdmin()">🔒 Cerrar Sesión Administrador</button>
         </div>
 
         <!-- BOTÓN DISCRETO PARA ACCEDER COMO ADMIN -->
@@ -517,7 +562,6 @@
         // ===================================================================
 
         // 🔑 CONTRASEÑA DEL ADMINISTRADOR
-        // Cámbiala aquí por la que tú quieras
         const PASSWORD_ADMIN = "admin123";
 
         // Variables globales
@@ -559,7 +603,7 @@
         function autenticarAdministrador() {
             const passIntroducida = prompt("🔑 Ingresa la contraseña de administrador:");
             
-            if (passIntroducida === null) return; // Canceló el prompt
+            if (passIntroducida === null) return; 
 
             if (passIntroducida === PASSWORD_ADMIN) {
                 esAdmin = true;
@@ -585,6 +629,7 @@
             if (visible) {
                 panelCard.style.display = "block";
                 authContainer.style.display = "none";
+                actualizarTablaEliminacion(); // Renderizar lista de eliminación
             } else {
                 panelCard.style.display = "none";
                 authContainer.style.display = "block";
@@ -622,14 +667,15 @@
                 }
                 construirMatrizVisual();
                 recalcularYRenderizar();
+                if (esAdmin) {
+                    actualizarTablaEliminacion(); // Actualizar la lista si eres admin activo
+                }
             });
         }
 
         function initQuiniela() {
-            // 1. Verificar si el admin ya se había logueado antes
             verificarSesionAdminExistente();
 
-            // 2. Generar formulario de registro para el usuario
             const registroBody = document.getElementById("registro-partidos-body");
             registroBody.innerHTML = "";
             partidos.forEach((partido, index) => {
@@ -658,7 +704,6 @@
                 registroBody.appendChild(tr);
             });
 
-            // 3. Encabezados dinámicos de la matriz
             const headerRow = document.getElementById("matrix-header");
             while (headerRow.cells.length > 1) {
                 headerRow.deleteCell(1);
@@ -670,7 +715,6 @@
                 headerRow.appendChild(th);
             });
 
-            // 4. Conectarse a Firebase
             conectarFirebase();
         }
 
@@ -707,6 +751,51 @@
             });
         }
 
+        // NUEVA FUNCIÓN: Genera la tabla para que el administrador elimine registros
+        function actualizarTablaEliminacion() {
+            const eliminarBody = document.getElementById("admin-eliminar-body");
+            eliminarBody.innerHTML = "";
+            
+            if (participantes.length === 0) {
+                eliminarBody.innerHTML = `<tr><td colspan="2" style="text-align: center; color: #a5b1c2;">No hay participantes registrados</td></tr>`;
+                return;
+            }
+
+            // Ordenar por nombre para ubicarlos fácil
+            const listaOrdenada = [...participantes].sort((a, b) => a.nombre.localeCompare(b.nombre));
+
+            listaOrdenada.forEach(p => {
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td style="font-weight: bold; color: var(--text);">${p.nombre}</td>
+                    <td style="text-align: right; padding-right: 10px;">
+                        <button class="btn-delete" onclick="eliminarParticipante('${p.id}', '${p.nombre}')">🗑️ Borrar</button>
+                    </td>
+                `;
+                eliminarBody.appendChild(tr);
+            });
+        }
+
+        // NUEVA FUNCIÓN: Elimina de Firebase
+        function eliminarParticipante(id, nombre) {
+            if (!esAdmin) {
+                alert("⚠️ Error: No tienes permisos de administrador.");
+                return;
+            }
+
+            const confirmar = confirm(`⚠ ¿Estás completamente seguro de eliminar permanentemente la quiniela de "${nombre}"? Esta acción no se puede deshacer.`);
+            
+            if (confirmar) {
+                database.ref("participantes").child(id).remove()
+                    .then(() => {
+                        alert(`✅ La quiniela de "${nombre}" fue eliminada exitosamente.`);
+                    })
+                    .catch((error) => {
+                        alert("Hubo un error al intentar borrar el registro: " + error.message);
+                    });
+            }
+        }
+
         // Genera la estructura HTML de la matriz
         function construirMatrizVisual() {
             const matrixBody = document.getElementById("matrix-body");
@@ -725,7 +814,6 @@
             });
         }
 
-        // Se ejecuta cuando el administrador cambia una L, E o V (doblemente protegido)
         function cambiarResultadoReal(index, valor) {
             if (!esAdmin) {
                 alert("⚠️ Error: No tienes permisos de administrador.");
@@ -761,7 +849,6 @@
                 pronosticosPlanos.push(checkedOptions[0].value);
             }
 
-            // Guardar en Firebase directamente
             const nuevoParticipanteRef = database.ref("participantes").push();
             nuevoParticipanteRef.set({
                 nombre: nombreInput,

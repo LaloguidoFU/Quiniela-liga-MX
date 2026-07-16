@@ -123,16 +123,11 @@
             background-color: #2b52b3;
         }
 
-        .btn-danger {
-            background-color: #eb3b5a;
-            font-size: 0.8rem;
-            padding: 6px 12px;
-            width: auto;
-            margin: 0;
+        .btn-success {
+            background-color: var(--secondary);
         }
-
-        .btn-danger:hover {
-            background-color: #cf2a43;
+        .btn-success:hover {
+            background-color: #1aa159;
         }
 
         /* TABLA DE POSICIONES */
@@ -222,14 +217,14 @@
             transition: all 0.2s;
         }
 
-        /* Color para el registro del participante (Azul) */
+        /* Color para el registro (Azul) */
         .progol-check.user-check input:checked ~ .checkmark {
             background-color: var(--accent);
             color: white;
             border-color: var(--accent);
         }
 
-        /* Color para el panel de administración (Verde) */
+        /* Color para los resultados reales (Verde) */
         .progol-check.admin-check input:checked ~ .checkmark {
             background-color: var(--secondary);
             color: white;
@@ -300,11 +295,18 @@
             color: var(--miss-text) !important;
         }
 
-        .header-actions {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            width: 100%;
+        /* AREA DE CODIGO GENERADO */
+        .codigo-resultado {
+            margin-top: 15px;
+            background-color: #2f3542;
+            color: #f1f2f6;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.85rem;
+            white-space: pre-wrap;
+            display: none;
+            border: 1px solid #57606f;
         }
     </style>
 </head>
@@ -317,9 +319,11 @@
 
     <div class="container">
         
-        <!-- SECCIÓN: REGISTRO DE NUEVO PARTICIPANTE -->
         <div class="card">
-            <h2>📝 REGISTRO DE PRONÓSTICOS</h2>
+            <h2>📝 CAPTURAR QUINIELA (WHATSAPP)</h2>
+            <p style="font-size: 0.85rem; color: #7f8c8d; margin-bottom: 10px;">
+                Captura lo que te mandaron por WhatsApp para generar el código e ir armando tu lista.
+            </p>
             <div class="input-group">
                 <label class="input-label" for="registro-nombre">Nombre del Participante:</label>
                 <input type="text" id="registro-nombre" class="text-input" placeholder="Ej. Juan Pérez">
@@ -336,14 +340,15 @@
                         </tr>
                     </thead>
                     <tbody id="registro-partidos-body">
-                        <!-- Se genera dinámicamente -->
-                    </tbody>
+                        </tbody>
                 </table>
             </div>
-            <button class="btn" onclick="registrarParticipante()">Registrar mi Quiniela</button>
+            <button class="btn" onclick="generarCodigoParticipante()">Generar Código para GitHub</button>
+            
+            <div id="codigo-contenedor" class="codigo-resultado"></div>
+            <button id="btn-copiar" class="btn btn-success" style="display: none;" onclick="copiarCodigoAlPortapapeles()">📋 Copiar Código</button>
         </div>
 
-        <!-- SECCIÓN: PANEL DE CONTROL: RESULTADOS REALES -->
         <div class="card">
             <h2>🛠️ PANEL DE CONTROL (RESULTADOS REALES)</h2>
             <p style="font-size: 0.85rem; color: #7f8c8d; margin-bottom: 10px;">
@@ -360,18 +365,13 @@
                         </tr>
                     </thead>
                     <tbody id="admin-partidos-body">
-                        <!-- Se genera dinámicamente -->
-                    </tbody>
+                        </tbody>
                 </table>
             </div>
         </div>
 
-        <!-- TABLA DE POSICIONES -->
         <div class="card posiciones-section">
-            <div class="header-actions">
-                <h2>Tabla de Posiciones</h2>
-                <button class="btn btn-danger" onclick="reiniciarQuiniela()">Limpiar Todo / Nueva Jornada</button>
-            </div>
+            <h2>Tabla de Posiciones</h2>
             <table class="ranking-table">
                 <thead>
                     <tr style="font-weight: bold; border-bottom: 2px solid var(--primary)">
@@ -381,12 +381,10 @@
                     </tr>
                 </thead>
                 <tbody id="ranking-body">
-                    <!-- Se llena dinámicamente -->
-                </tbody>
+                    </tbody>
             </table>
         </div>
 
-        <!-- MATRIZ DE PREDICCIONES -->
         <div class="card matrix-section">
             <h2>📊 Matriz de Predicciones y Resultados</h2>
             <input type="text" id="search" class="search-box" placeholder="🔍 Buscar participante por nombre..." oninput="filtrarParticipantes()">
@@ -396,12 +394,10 @@
                     <thead>
                         <tr id="matrix-header">
                             <th>Participante</th>
-                            <!-- Los encabezados de los partidos se generan dinámicamente -->
-                        </tr>
+                            </tr>
                     </thead>
                     <tbody id="matrix-body">
-                        <!-- Las predicciones se cargan dinámicamente -->
-                    </tbody>
+                        </tbody>
                 </table>
             </div>
         </div>
@@ -409,9 +405,9 @@
     </div>
 
     <script>
-        // ==========================================================
+        // ====================================================================
         // CONFIGURACIÓN DE LOS PARTIDOS (Modifica esta lista cada semana)
-        // ==========================================================
+        // ====================================================================
         const partidos = [
             "Necaxa vs. Atlante",
             "Xolos vs. Tigres",
@@ -424,23 +420,21 @@
             "Querétaro vs. América"
         ];
 
-        // Valores por defecto si la base de datos local está vacía
-        const defaultResultados = ["L", "V", "E", "-", "-", "-", "-", "-", "-"];
-        const defaultParticipantes = [
+        // ====================================================================
+        // RESULTADOS REALES DE LOS PARTIDOS
+        // ====================================================================
+        // Pon el resultado real: "L" (Local), "E" (Empate), "V" (Visita) o "-" (No jugado)
+        const resultadosReales = ["L", "V", "E", "-", "-", "-", "-", "-", "-"];
+
+        // ====================================================================
+        // PRONÓSTICOS DE LOS PARTICIPANTES (Copia aquí los códigos generados)
+        // ====================================================================
+        const participantes = [
             { nombre: "Carlos", pronosticos: ["L", "L", "L", "L", "E", "V", "L", "L", "V"] },
             { nombre: "Ana", pronosticos: ["L", "V", "E", "L", "L", "L", "E", "V", "L"] },
             { nombre: "Beto", pronosticos: ["E", "V", "L", "V", "E", "L", "L", "L", "V"] },
             { nombre: "Daniela", pronosticos: ["L", "V", "E", "L", "L", "L", "E", "V", "L"] }
         ];
-
-        // Carga de datos persistentes desde LocalStorage o uso de valores por defecto
-        let resultadosReales = JSON.parse(localStorage.getItem("quiniela_resultados")) || [...defaultResultados];
-        let participantes = JSON.parse(localStorage.getItem("quiniela_participantes")) || [...defaultParticipantes];
-
-        // Asegurar que el tamaño de arreglos coincida con el número de partidos configurados
-        if (resultadosReales.length !== partidos.length) {
-            resultadosReales = Array(partidos.length).fill("-");
-        }
 
         function generarSlug(text) {
             return text.trim()
@@ -541,19 +535,12 @@
             recalcularYRenderizar();
         }
 
-        // Registrar un nuevo participante en la boleta activa
-        function registrarParticipante() {
+        // Genera el código para copiar y pegar en GitHub
+        function generarCodigoParticipante() {
             const nombreInput = document.getElementById("registro-nombre").value.trim();
             
             if (!nombreInput) {
                 alert("⚠️ Por favor, ingresa el nombre del participante.");
-                return;
-            }
-
-            // Validar que no se repitan nombres exactos
-            const yaExiste = participantes.some(p => generarSlug(p.nombre) === generarSlug(nombreInput));
-            if (yaExiste) {
-                alert("⚠️ Este participante ya está registrado.");
                 return;
             }
 
@@ -564,33 +551,38 @@
                     alert(`⚠️ Te falta seleccionar tu pronóstico para el Partido #${i + 1}.`);
                     return;
                 }
-                nuevosPronosticos.push(checkedRadio.value);
+                nuevosPronosticos.push(`"${checkedRadio.value}"`);
             }
 
-            // Guardar al participante
-            participantes.push({
-                nombre: nombreInput,
-                pronosticos: nuevosPronosticos
+            // Formatear el texto final como objeto JS
+            const codigoGenerado = `{\n    nombre: "${nombreInput}",\n    pronosticos: [${nuevosPronosticos.join(", ")}]\n},`;
+
+            // Mostrar el contenedor de código
+            const contenedor = document.getElementById("codigo-contenedor");
+            contenedor.innerText = codigoGenerado;
+            contenedor.style.display = "block";
+            document.getElementById("btn-copiar").style.display = "block";
+        }
+
+        // Función para copiar fácilmente
+        function copiarCodigoAlPortapapeles() {
+            const texto = document.getElementById("codigo-contenedor").innerText;
+            navigator.clipboard.writeText(texto).then(() => {
+                alert("📋 ¡Código copiado! Ahora ve a tu código en GitHub, búscalo y pégalo dentro de la lista de 'participantes'.");
+                
+                // Limpiar el formulario para la siguiente captura
+                document.getElementById("registro-nombre").value = "";
+                for (let i = 0; i < partidos.length; i++) {
+                    const radio = document.querySelector(`input[name="registro-partido-${i}"]:checked`);
+                    if (radio) radio.checked = false;
+                }
+                document.getElementById("codigo-contenedor").style.display = "none";
+                document.getElementById("btn-copiar").style.display = "none";
             });
-
-            // Guardar en almacenamiento del navegador
-            localStorage.setItem("quiniela_participantes", JSON.stringify(participantes));
-
-            // Resetear el formulario
-            document.getElementById("registro-nombre").value = "";
-            for (let i = 0; i < partidos.length; i++) {
-                const radio = document.querySelector(`input[name="registro-partido-${i}"]:checked`);
-                if (radio) radio.checked = false;
-            }
-
-            // Actualizar la interfaz
-            initQuiniela();
-            alert(`🎉 ¡Excelente! ${nombreInput} ha sido registrado exitosamente.`);
         }
 
         function cambiarResultadoReal(index, valor) {
             resultadosReales[index] = valor;
-            localStorage.setItem("quiniela_resultados", JSON.stringify(resultadosReales));
             recalcularYRenderizar();
         }
 
@@ -602,7 +594,7 @@
                 
                 participantes.forEach(p => {
                     const pronosticoUser = p.pronosticos[i];
-                    const fila = document.getElementById(`fila-${generarSlug(p.nombre)}`);
+                    const fila = document.getElementById(`fila-${generarSlug(p.nombre}`);
                     if (fila) {
                         const celda = fila.querySelector(`td[data-partido-index="${i}"]`);
                         if (celda) {
@@ -656,22 +648,7 @@
             });
         }
 
-        // Reinicia la quiniela borrando toda la memoria del navegador
-        function reiniciarQuiniela() {
-            if (confirm("⚠️ ¿Estás seguro de que quieres borrar todos los participantes registrados y reiniciar los resultados reales? Esta acción no se puede deshacer.")) {
-                localStorage.removeItem("quiniela_participantes");
-                localStorage.removeItem("quiniela_resultados");
-                
-                resultadosReales = Array(partidos.length).fill("-");
-                participantes = [];
-
-                initQuiniela();
-                alert("🔄 La quiniela se ha reiniciado por completo. ¡Listo para una nueva jornada!");
-            }
-        }
-
         document.addEventListener("DOMContentLoaded", initQuiniela);
     </script>
 </body>
 </html>
-

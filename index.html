@@ -360,6 +360,31 @@
             font-size: 0.8rem;
             outline: none;
         }
+
+        /* ESTILOS NUEVOS PARA EL ACCESO DE ADMINISTRADOR */
+        #admin-panel-card {
+            display: none; /* Oculto por defecto */
+        }
+
+        .admin-auth-container {
+            text-align: center;
+            margin: 15px 0 10px 0;
+        }
+
+        .btn-admin-auth {
+            background: transparent;
+            border: 1px dashed #a5b1c2;
+            color: #778ca3;
+            padding: 6px 12px;
+            font-size: 0.7rem;
+            border-radius: 12px;
+            cursor: pointer;
+        }
+
+        .btn-admin-auth:hover {
+            color: var(--primary);
+            border-color: var(--primary);
+        }
     </style>
 </head>
 <body>
@@ -406,8 +431,9 @@
             </div>
         </div>
 
-        <div class="card">
-            <h2>🛠️ PANEL DE CONTROL (RESULTADOS REALES)</h2>
+        <!-- TARJETA PANEL DE CONTROL SEGURO (OCULTA POR DEFECTO) -->
+        <div class="card" id="admin-panel-card">
+            <h2>🛠️ PANEL DE CONTROL (ADMINISTRADOR)</h2>
             <div class="table-responsive">
                 <table class="progol-table">
                     <thead>
@@ -422,6 +448,12 @@
                         </tbody>
                 </table>
             </div>
+            <button class="btn-admin-auth" style="margin-top: 10px; width: 100%; border-style: solid; border-color: #fee2e2; color: var(--miss-text);" onclick="cerrarSesionAdmin()">🔒 Cerrar Sesión Administrador</button>
+        </div>
+
+        <!-- BOTÓN DISCRETO PARA ACCEDER COMO ADMIN -->
+        <div class="admin-auth-container" id="auth-trigger-container">
+            <button class="btn-admin-auth" onclick="autenticarAdministrador()">🔧 Acceder como Administrador</button>
         </div>
     </div>
 
@@ -452,7 +484,6 @@
                             </tbody>
                     </table>
                 </div>
-                <!-- Se cambió la clase y la función del botón de envío -->
                 <button class="btn" onclick="registrarQuiniela()">💾 Guardar Quiniela</button>
             </div>
         </div>
@@ -485,9 +516,14 @@
         const database = firebase.database();
         // ===================================================================
 
+        // 🔑 CONTRASEÑA DEL ADMINISTRADOR
+        // Cámbiala aquí por la que tú quieras
+        const PASSWORD_ADMIN = "admin123";
+
         // Variables globales
         let resultadosReales = ["-", "-", "-", "-", "-", "-", "-", "-", "-"];
         let participantes = [];
+        let esAdmin = false;
 
         // LÓGICA DE APERTURA Y CIERRE DE MODALES
         function openModal(modalId) {
@@ -511,6 +547,50 @@
                 .replace(/[\u0300-\u036f]/g, "") 
                 .replace(/[^a-z0-9]/g, "-");     
         }
+
+        // --- SISTEMA DE AUTENTICACIÓN ADMIN ---
+        function verificarSesionAdminExistente() {
+            if (localStorage.getItem("sesion_quiniela_admin") === "activa") {
+                esAdmin = true;
+                mostrarInterfazAdmin(true);
+            }
+        }
+
+        function autenticarAdministrador() {
+            const passIntroducida = prompt("🔑 Ingresa la contraseña de administrador:");
+            
+            if (passIntroducida === null) return; // Canceló el prompt
+
+            if (passIntroducida === PASSWORD_ADMIN) {
+                esAdmin = true;
+                localStorage.setItem("sesion_quiniela_admin", "activa");
+                mostrarInterfazAdmin(true);
+                alert("🔓 Acceso concedido. El Panel de Control ya está visible al final de la página.");
+            } else {
+                alert("❌ Contraseña incorrecta. Acceso denegado.");
+            }
+        }
+
+        function cerrarSesionAdmin() {
+            esAdmin = false;
+            localStorage.removeItem("sesion_quiniela_admin");
+            mostrarInterfazAdmin(false);
+            alert("🔒 Sesión cerrada. El Panel de Control se ha ocultado.");
+        }
+
+        function mostrarInterfazAdmin(visible) {
+            const panelCard = document.getElementById("admin-panel-card");
+            const authContainer = document.getElementById("auth-trigger-container");
+            
+            if (visible) {
+                panelCard.style.display = "block";
+                authContainer.style.display = "none";
+            } else {
+                panelCard.style.display = "none";
+                authContainer.style.display = "block";
+            }
+        }
+        // --------------------------------------
 
         // Escuchar cambios en la base de datos en tiempo real
         function conectarFirebase() {
@@ -546,7 +626,10 @@
         }
 
         function initQuiniela() {
-            // 1. Generar formulario de registro para el usuario
+            // 1. Verificar si el admin ya se había logueado antes
+            verificarSesionAdminExistente();
+
+            // 2. Generar formulario de registro para el usuario
             const registroBody = document.getElementById("registro-partidos-body");
             registroBody.innerHTML = "";
             partidos.forEach((partido, index) => {
@@ -575,7 +658,7 @@
                 registroBody.appendChild(tr);
             });
 
-            // 2. Encabezados dinámicos de la matriz
+            // 3. Encabezados dinámicos de la matriz
             const headerRow = document.getElementById("matrix-header");
             while (headerRow.cells.length > 1) {
                 headerRow.deleteCell(1);
@@ -587,7 +670,7 @@
                 headerRow.appendChild(th);
             });
 
-            // 3. Conectarse a Firebase
+            // 4. Conectarse a Firebase
             conectarFirebase();
         }
 
@@ -642,13 +725,16 @@
             });
         }
 
-        // Se ejecuta cuando el administrador cambia una L, E o V
+        // Se ejecuta cuando el administrador cambia una L, E o V (doblemente protegido)
         function cambiarResultadoReal(index, valor) {
+            if (!esAdmin) {
+                alert("⚠️ Error: No tienes permisos de administrador.");
+                return;
+            }
             resultadosReales[index] = valor;
             database.ref("resultadosReales").set(resultadosReales);
         }
 
-        // NUEVA FUNCIÓN: Guarda el participante en Firebase SIN redirigir a WhatsApp
         function registrarQuiniela() {
             const nombreInput = document.getElementById("registro-nombre").value.trim();
             
@@ -681,20 +767,17 @@
                 nombre: nombreInput,
                 pronosticos: pronosticosPlanos
             }).then(() => {
-                // Notificación de éxito
                 alert("🎉 ¡Tu quiniela ha sido registrada exitosamente!");
                 
-                // Limpiar campos de registro (Nombre y radios)
                 document.getElementById("registro-nombre").value = "";
                 for (let i = 0; i < partidos.length; i++) {
                     const checkedOption = document.querySelector(`input[name="registro-partido-${i}"]:checked`);
                     if (checkedOption) checkedOption.checked = false;
                 }
                 
-                // Cerrar modal
                 closeModal('modal-registrar');
             }).catch((error) => {
-                alert("Hubo un error al guardar tu quiniela en la base de datos: " + error.message);
+                alert("Hubo un error al guardar tu quiniela: " + error.message);
             });
         }
 

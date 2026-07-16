@@ -2,13 +2,14 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Quiniela Liga MX - Progol</title>
     <style>
         :root {
             --primary: #0a3d62;
             --primary-dark: #072a44;
             --secondary: #20bf6b;
+            --accent: #3867d6;
             --bg: #f1f2f6;
             --card-bg: #ffffff;
             --text: #2f3542;
@@ -50,7 +51,10 @@
 
         @media (min-width: 900px) {
             .container {
-                grid-template-columns: 400px 1fr;
+                grid-template-columns: 1fr 1fr;
+            }
+            .matrix-section, .posiciones-section {
+                grid-column: 1 / -1;
             }
         }
 
@@ -59,6 +63,9 @@
             border-radius: 12px;
             padding: 20px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
         }
 
         .card h2 {
@@ -70,6 +77,62 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+        }
+
+        /* INPUTS Y BOTONES */
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        .input-label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+        }
+
+        .text-input {
+            width: 100%;
+            padding: 10px 15px;
+            border: 2px solid #e4e7eb;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .text-input:focus {
+            border-color: var(--accent);
+        }
+
+        .btn {
+            background-color: var(--accent);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 15px;
+            transition: background-color 0.2s;
+        }
+
+        .btn:hover {
+            background-color: #2b52b3;
+        }
+
+        .btn-danger {
+            background-color: #eb3b5a;
+            font-size: 0.8rem;
+            padding: 6px 12px;
+            width: auto;
+            margin: 0;
+        }
+
+        .btn-danger:hover {
+            background-color: #cf2a43;
         }
 
         /* TABLA DE POSICIONES */
@@ -97,7 +160,7 @@
             font-size: 0.85rem;
         }
 
-        /* FORMATO BOLETA PROGOL (ADMIN Y REGISTRO) */
+        /* FORMATO BOLETA PROGOL */
         .progol-table {
             width: 100%;
             border-collapse: collapse;
@@ -125,7 +188,6 @@
             max-width: 180px;
         }
 
-        /* Checkboxes Estilo Progol */
         .progol-check {
             display: inline-block;
             position: relative;
@@ -160,13 +222,14 @@
             transition: all 0.2s;
         }
 
-        .progol-check input:checked ~ .checkmark {
-            background-color: var(--primary);
+        /* Color para el registro del participante (Azul) */
+        .progol-check.user-check input:checked ~ .checkmark {
+            background-color: var(--accent);
             color: white;
-            border-color: var(--primary);
+            border-color: var(--accent);
         }
 
-        /* Estilo Progol Admin Checkmark */
+        /* Color para el panel de administración (Verde) */
         .progol-check.admin-check input:checked ~ .checkmark {
             background-color: var(--secondary);
             color: white;
@@ -188,11 +251,7 @@
             border-color: var(--primary);
         }
 
-        /* MATRIZ GENERAL (TABLA DE ABAJO) */
-        .matrix-section {
-            grid-column: 1 / -1;
-        }
-
+        /* MATRIZ GENERAL */
         .table-responsive {
             overflow-x: auto;
             border-radius: 8px;
@@ -230,7 +289,6 @@
             border-right: 2px solid #cbd5e1;
         }
 
-        /* Estados de validación */
         .hit {
             background-color: var(--hit-bg) !important;
             color: var(--hit-text) !important;
@@ -240,6 +298,13 @@
         .miss {
             background-color: var(--miss-bg) !important;
             color: var(--miss-text) !important;
+        }
+
+        .header-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
         }
     </style>
 </head>
@@ -252,26 +317,38 @@
 
     <div class="container">
         
-        <!-- COLUMNA 1: POSICIONES -->
+        <!-- SECCIÓN: REGISTRO DE NUEVO PARTICIPANTE -->
         <div class="card">
-            <h2>Tabla de Posiciones</h2>
-            <table class="ranking-table">
-                <thead>
-                    <tr style="font-weight: bold; border-bottom: 2px solid var(--primary)">
-                        <td style="width: 40px;">Pos</td>
-                        <td>Participante</td>
-                        <td style="text-align: right;">Aciertos</td>
-                    </tr>
-                </thead>
-                <tbody id="ranking-body">
-                    <!-- Se llena dinámicamente -->
-                </tbody>
-            </table>
+            <h2>📝 REGISTRO DE PRONÓSTICOS</h2>
+            <div class="input-group">
+                <label class="input-label" for="registro-nombre">Nombre del Participante:</label>
+                <input type="text" id="registro-nombre" class="text-input" placeholder="Ej. Juan Pérez">
+            </div>
+            
+            <div class="table-responsive">
+                <table class="progol-table">
+                    <thead>
+                        <tr>
+                            <th>Partido</th>
+                            <th style="width: 50px;">L</th>
+                            <th style="width: 50px;">E</th>
+                            <th style="width: 50px;">V</th>
+                        </tr>
+                    </thead>
+                    <tbody id="registro-partidos-body">
+                        <!-- Se genera dinámicamente -->
+                    </tbody>
+                </table>
+            </div>
+            <button class="btn" onclick="registrarParticipante()">Registrar mi Quiniela</button>
         </div>
 
-        <!-- COLUMNA 2: CONTROL DE RESULTADOS REALES -->
+        <!-- SECCIÓN: PANEL DE CONTROL: RESULTADOS REALES -->
         <div class="card">
-            <h2>🛠️ PANEL DE CONTROL: RESULTADOS REALES</h2>
+            <h2>🛠️ PANEL DE CONTROL (RESULTADOS REALES)</h2>
+            <p style="font-size: 0.85rem; color: #7f8c8d; margin-bottom: 10px;">
+                Marca aquí los resultados oficiales conforme terminen los partidos de la jornada.
+            </p>
             <div class="table-responsive">
                 <table class="progol-table">
                     <thead>
@@ -289,7 +366,27 @@
             </div>
         </div>
 
-        <!-- FILA COMPLETA ABAJO: MATRIZ DE PREDICCIONES -->
+        <!-- TABLA DE POSICIONES -->
+        <div class="card posiciones-section">
+            <div class="header-actions">
+                <h2>Tabla de Posiciones</h2>
+                <button class="btn btn-danger" onclick="reiniciarQuiniela()">Limpiar Todo / Nueva Jornada</button>
+            </div>
+            <table class="ranking-table">
+                <thead>
+                    <tr style="font-weight: bold; border-bottom: 2px solid var(--primary)">
+                        <td style="width: 40px;">Pos</td>
+                        <td>Participante</td>
+                        <td style="text-align: right;">Aciertos</td>
+                    </tr>
+                </thead>
+                <tbody id="ranking-body">
+                    <!-- Se llena dinámicamente -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- MATRIZ DE PREDICCIONES -->
         <div class="card matrix-section">
             <h2>📊 Matriz de Predicciones y Resultados</h2>
             <input type="text" id="search" class="search-box" placeholder="🔍 Buscar participante por nombre..." oninput="filtrarParticipantes()">
@@ -312,11 +409,9 @@
     </div>
 
     <script>
-        // ==========================================
-        // CONFIGURACIÓN DINÁMICA DE LA JORNADA
-        // ==========================================
-        // Modifica libremente este arreglo semana a semana. 
-        // El sistema se adapta automáticamente a cualquier número de enfrentamientos.
+        // ==========================================================
+        // CONFIGURACIÓN DE LOS PARTIDOS (Modifica esta lista cada semana)
+        // ==========================================================
         const partidos = [
             "Necaxa vs. Atlante",
             "Xolos vs. Tigres",
@@ -329,37 +424,24 @@
             "Querétaro vs. América"
         ];
 
-        // ==========================================
-        // RESULTADOS REALES DE LOS PARTIDOS
-        // ==========================================
-        // Pon el resultado real usando: "L" (Local), "E" (Empate), "V" (Visita) o "-" (No jugado)
-        const resultadosReales = ["L", "V", "E", "-", "-", "-", "-", "-", "-"];
-
-        // ==========================================
-        // PRONÓSTICOS DE LOS PARTICIPANTES
-        // ==========================================
-        // Copia y pega aquí las predicciones de tu grupo de WhatsApp
-        // Debes meter exactamente un caracter ("L", "E", "V") por cada partido de la lista de arriba.
-        const participantes = [
-            {
-                nombre: "Carlos",
-                pronosticos: ["L", "L", "L", "L", "E", "V", "L", "L", "V"]
-            },
-            {
-                nombre: "Ana",
-                pronosticos: ["L", "V", "E", "L", "L", "L", "E", "V", "L"]
-            },
-            {
-                nombre: "Beto",
-                pronosticos: ["E", "V", "L", "V", "E", "L", "L", "L", "V"]
-            },
-            {
-                nombre: "Daniela",
-                pronosticos: ["L", "V", "E", "L", "L", "L", "E", "V", "L"] // Mismo puntaje que Ana para ver desempate alfabético
-            }
+        // Valores por defecto si la base de datos local está vacía
+        const defaultResultados = ["L", "V", "E", "-", "-", "-", "-", "-", "-"];
+        const defaultParticipantes = [
+            { nombre: "Carlos", pronosticos: ["L", "L", "L", "L", "E", "V", "L", "L", "V"] },
+            { nombre: "Ana", pronosticos: ["L", "V", "E", "L", "L", "L", "E", "V", "L"] },
+            { nombre: "Beto", pronosticos: ["E", "V", "L", "V", "E", "L", "L", "L", "V"] },
+            { nombre: "Daniela", pronosticos: ["L", "V", "E", "L", "L", "L", "E", "V", "L"] }
         ];
 
-        // Función para limpiar nombres y usar como IDs seguros de JS
+        // Carga de datos persistentes desde LocalStorage o uso de valores por defecto
+        let resultadosReales = JSON.parse(localStorage.getItem("quiniela_resultados")) || [...defaultResultados];
+        let participantes = JSON.parse(localStorage.getItem("quiniela_participantes")) || [...defaultParticipantes];
+
+        // Asegurar que el tamaño de arreglos coincida con el número de partidos configurados
+        if (resultadosReales.length !== partidos.length) {
+            resultadosReales = Array(partidos.length).fill("-");
+        }
+
         function generarSlug(text) {
             return text.trim()
                 .toLowerCase()
@@ -368,9 +450,37 @@
                 .replace(/[^a-z0-9]/g, "-");     
         }
 
-        // Inicializa la interfaz al cargar la página
         function initQuiniela() {
-            // 1. Renderizar Panel Admin de Resultados Reales (Diseño Progol)
+            // 1. Renderizar Panel de Registro de Participantes
+            const registroBody = document.getElementById("registro-partidos-body");
+            registroBody.innerHTML = "";
+            partidos.forEach((partido, index) => {
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td class="partido-celda"><b>${index + 1}.</b> ${partido}</td>
+                    <td>
+                        <label class="progol-check user-check">
+                            <input type="radio" name="registro-partido-${index}" value="L">
+                            <span class="checkmark">L</span>
+                        </label>
+                    </td>
+                    <td>
+                        <label class="progol-check user-check">
+                            <input type="radio" name="registro-partido-${index}" value="E">
+                            <span class="checkmark">E</span>
+                        </label>
+                    </td>
+                    <td>
+                        <label class="progol-check user-check">
+                            <input type="radio" name="registro-partido-${index}" value="V">
+                            <span class="checkmark">V</span>
+                        </label>
+                    </td>
+                `;
+                registroBody.appendChild(tr);
+            });
+
+            // 2. Renderizar Panel Admin de Resultados Reales
             const adminBody = document.getElementById("admin-partidos-body");
             adminBody.innerHTML = "";
             partidos.forEach((partido, index) => {
@@ -401,9 +511,8 @@
                 adminBody.appendChild(tr);
             });
 
-            // 2. Renderizar Encabezados de la Tabla Matriz
+            // 3. Renderizar Encabezados de la Tabla Matriz
             const headerRow = document.getElementById("matrix-header");
-            // Limpiar cabeceras dinámicas antiguas si existen (mantener solo la columna 1)
             while (headerRow.cells.length > 1) {
                 headerRow.deleteCell(1);
             }
@@ -413,7 +522,7 @@
                 headerRow.appendChild(th);
             });
 
-            // 3. Renderizar filas de predicciones de los participantes
+            // 4. Renderizar filas de predicciones de los participantes
             const matrixBody = document.getElementById("matrix-body");
             matrixBody.innerHTML = "";
             participantes.forEach(p => {
@@ -432,34 +541,76 @@
             recalcularYRenderizar();
         }
 
-        // Manejador del Panel de Control en tiempo real
+        // Registrar un nuevo participante en la boleta activa
+        function registrarParticipante() {
+            const nombreInput = document.getElementById("registro-nombre").value.trim();
+            
+            if (!nombreInput) {
+                alert("⚠️ Por favor, ingresa el nombre del participante.");
+                return;
+            }
+
+            // Validar que no se repitan nombres exactos
+            const yaExiste = participantes.some(p => generarSlug(p.nombre) === generarSlug(nombreInput));
+            if (yaExiste) {
+                alert("⚠️ Este participante ya está registrado.");
+                return;
+            }
+
+            const nuevosPronosticos = [];
+            for (let i = 0; i < partidos.length; i++) {
+                const checkedRadio = document.querySelector(`input[name="registro-partido-${i}"]:checked`);
+                if (!checkedRadio) {
+                    alert(`⚠️ Te falta seleccionar tu pronóstico para el Partido #${i + 1}.`);
+                    return;
+                }
+                nuevosPronosticos.push(checkedRadio.value);
+            }
+
+            // Guardar al participante
+            participantes.push({
+                nombre: nombreInput,
+                pronosticos: nuevosPronosticos
+            });
+
+            // Guardar en almacenamiento del navegador
+            localStorage.setItem("quiniela_participantes", JSON.stringify(participantes));
+
+            // Resetear el formulario
+            document.getElementById("registro-nombre").value = "";
+            for (let i = 0; i < partidos.length; i++) {
+                const radio = document.querySelector(`input[name="registro-partido-${i}"]:checked`);
+                if (radio) radio.checked = false;
+            }
+
+            // Actualizar la interfaz
+            initQuiniela();
+            alert(`🎉 ¡Excelente! ${nombreInput} ha sido registrado exitosamente.`);
+        }
+
         function cambiarResultadoReal(index, valor) {
             resultadosReales[index] = valor;
+            localStorage.setItem("quiniela_resultados", JSON.stringify(resultadosReales));
             recalcularYRenderizar();
         }
 
-        // Calcula puntuaciones y actualiza las clases CSS (verde/rojo) en tiempo real
         function recalcularYRenderizar() {
-            // Reiniciar puntajes
             participantes.forEach(p => p.puntos = 0);
 
-            // Calcular aciertos
             for (let i = 0; i < partidos.length; i++) {
                 const resultadoOficial = resultadosReales[i];
                 
                 participantes.forEach(p => {
                     const pronosticoUser = p.pronosticos[i];
-                    
-                    // Actualizar estilos visuales de acierto o error en la matriz
                     const fila = document.getElementById(`fila-${generarSlug(p.nombre)}`);
                     if (fila) {
                         const celda = fila.querySelector(`td[data-partido-index="${i}"]`);
                         if (celda) {
-                            celda.className = ""; // Resetear clases
+                            celda.className = ""; 
                             if (resultadoOficial !== "-") {
                                 if (pronosticoUser === resultadoOficial) {
                                     celda.classList.add("hit");
-                                    p.puntos += 1; // 1 punto por acierto
+                                    p.puntos += 1;
                                 } else {
                                     celda.classList.add("miss");
                                 }
@@ -472,16 +623,15 @@
             actualizarRanking();
         }
 
-        // Ordena las posiciones de mayor a menor. Si empatan, desempata alfabéticamente de la A-Z
         function actualizarRanking() {
             const rankingBody = document.getElementById("ranking-body");
             rankingBody.innerHTML = "";
 
             const participantesOrdenados = [...participantes].sort((a, b) => {
                 if (b.puntos !== a.puntos) {
-                    return b.puntos - a.puntos; // Mayor puntaje primero
+                    return b.puntos - a.puntos;
                 }
-                return a.nombre.localeCompare(b.nombre); // Orden alfabético A-Z si empatan
+                return a.nombre.localeCompare(b.nombre);
             });
 
             participantesOrdenados.forEach((p, index) => {
@@ -495,7 +645,6 @@
             });
         }
 
-        // Filtro buscador
         function filtrarParticipantes() {
             const input = document.getElementById("search").value.toLowerCase().trim();
             participantes.forEach(p => {
@@ -507,8 +656,22 @@
             });
         }
 
-        // Arrancar la app
+        // Reinicia la quiniela borrando toda la memoria del navegador
+        function reiniciarQuiniela() {
+            if (confirm("⚠️ ¿Estás seguro de que quieres borrar todos los participantes registrados y reiniciar los resultados reales? Esta acción no se puede deshacer.")) {
+                localStorage.removeItem("quiniela_participantes");
+                localStorage.removeItem("quiniela_resultados");
+                
+                resultadosReales = Array(partidos.length).fill("-");
+                participantes = [];
+
+                initQuiniela();
+                alert("🔄 La quiniela se ha reiniciado por completo. ¡Listo para una nueva jornada!");
+            }
+        }
+
         document.addEventListener("DOMContentLoaded", initQuiniela);
     </script>
 </body>
 </html>
+
